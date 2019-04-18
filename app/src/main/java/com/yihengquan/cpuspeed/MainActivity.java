@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> commands = new ArrayList<>();
         for (int i = 0; i < core; i++) {
             String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
-            // Change to 644 for changing value and then change it back
+            // Change to 644 for changing value and then change it back (from Kernel Adiutor)
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, speed, path, path));
         }
 
