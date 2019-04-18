@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,20 +47,20 @@ public class MainActivity extends AppCompatActivity {
         // Get a list for commands
         ArrayList<String> commands = new ArrayList<>();
         for (int i = 0; i < core; i++) {
-            String curr = String.format("su -c 'echo %d > /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq'", speed, i);
-            commands.add(curr);
+            String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
+            // Change to 644 for changing value and then change it back
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, speed, path, path));
         }
 
         // Try to get root and run the script
         try {
-            String[] c = commands.toArray(new String[core]);
+            String[] c = commands.toArray(new String[0]);
             Process p = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(p.getOutputStream());
             for (String cmd : c) {
                 os.writeBytes(cmd + "\n");
+                os.flush();
             }
-            os.flush();
-            os.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
