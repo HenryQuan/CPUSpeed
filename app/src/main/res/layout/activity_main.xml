@@ -7,13 +7,16 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <EditText android:hint="xxx MHz"
+    <EditText android:id="@+id/speedText"
+        android:hint="xxx MHz"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:imeOptions="actionDone" />
-    <Button android:id="@+id/button"
+    <Button android:id="@+id/updateBtn"
+        android:onClick="setSpeed"
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello, I am a Button" />
+        android:text="Update CPU speed" />
 </LinearLayout>
