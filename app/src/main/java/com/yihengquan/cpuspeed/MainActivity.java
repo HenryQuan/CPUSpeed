@@ -52,12 +52,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Try to get root and run the script
         try {
-            String[] c = commands.toArray(new String[0]);
-            Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+            String[] c = commands.toArray(new String[core]);
+            Process p = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(p.getOutputStream());
             for (String cmd : c) {
                 os.writeBytes(cmd + "\n");
             }
+            os.flush();
+            os.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
