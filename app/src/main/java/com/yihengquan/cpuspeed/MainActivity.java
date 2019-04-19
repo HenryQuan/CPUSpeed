@@ -29,13 +29,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        // Prevent restarting activity
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setContentView(R.layout.activity_main);
-        } else {
-            setContentView(R.layout.activity_main);
-        }
     }
 
     @Override
