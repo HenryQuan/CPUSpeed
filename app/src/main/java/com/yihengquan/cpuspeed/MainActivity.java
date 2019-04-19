@@ -43,23 +43,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (findBinary("su")) {
+        if (!findBinary("su")) {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
-            // Get cpuinfo
-            String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+            // Get cpuinfo and current freq in one go
+            String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq " +
+                    "&& cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
             String[] shell = output.split("\n");
             minFreqInfo = Integer.parseInt(shell[0]);
             maxFreqInfo = Integer.parseInt(shell[1]);
+
+            currMinFreq = Integer.parseInt(shell[2]);
+            currMaxFreq = Integer.parseInt(shell[3]);
             freqDiff = maxFreqInfo - minFreqInfo;
             Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
-
-            // Get current scaling
-            output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
-            shell = output.split("\n");
-
-            currMinFreq = Integer.parseInt(shell[0]);
-            currMaxFreq = Integer.parseInt(shell[1]);
 
             TextView minValue = findViewById(R.id.minFreqValue);
             minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
