@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!findBinary("su")) {
+        if (findBinary("su")) {
             // Empty screen for non-rooted devices
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
@@ -51,8 +51,34 @@ public class MainActivity extends AppCompatActivity {
                 maxFreqInfo = Integer.parseInt(shell[1]);
                 Toast.makeText(this, String.format(Locale.ENGLISH,"Max: %d\nMin: %d", maxFreqInfo, minFreqInfo), Toast.LENGTH_SHORT).show();
 
+                // Update freq when seek bar changed
                 SeekBar maxFreq = findViewById(R.id.maxFreq);
-                maxFreq.setMax(2900000);
+                maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
+                        Toast.makeText(getApplicationContext(), "Hello" ,Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) { }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) { }
+                });
+
+                SeekBar minFreq = findViewById(R.id.minFreq);
+                minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
+                        Toast.makeText(getApplicationContext(), "Hello",Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) { }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) { }
+                });
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -97,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
         return found;
     }
 
+    /**
+     * Set CPU frequency
+     * @param speed
+     * @param core
+     */
     private void setCPUSpeed(int speed, int core) {
         // Get a list for commands
         ArrayList<String> commands = new ArrayList<>();
@@ -106,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, speed, path, path));
         }
 
-        // Try to get root and run the script
         try {
+            // Try to get root and run the script
             String[] c = commands.toArray(new String[0]);
             Process p = Runtime.getRuntime().exec("su");
             DataOutputStream os = new DataOutputStream(p.getOutputStream());
