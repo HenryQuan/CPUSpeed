@@ -157,7 +157,14 @@ public class MainActivity extends AppCompatActivity {
                 os.writeBytes(cmd + "\n");
                 os.flush();
             }
+
+            p.waitFor();
+            // Wait for code to run
+            Toast.makeText(this, String.format(Locale.ENGLISH,"Success", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, String.format(Locale.ENGLISH,"Something went wrong", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
