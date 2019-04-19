@@ -50,7 +50,12 @@ public class MainActivity extends AppCompatActivity {
                 String[] shell = output.toString().split("\n");
                 minFreqInfo = Integer.parseInt(shell[0]);
                 maxFreqInfo = Integer.parseInt(shell[1]);
-                Toast.makeText(this, String.format(Locale.ENGLISH,"Max: %d\nMin: %d", maxFreqInfo, minFreqInfo), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+
+                TextView minValue = findViewById(R.id.minFreqValue);
+                minValue.setText(String.format(Locale.ENGLISH,"%d MHz", minFreqInfo));
+                TextView maxValue = findViewById(R.id.maxFreqValue);
+                maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", maxFreqInfo));
 
                 // Update freq when seek bar changed
                 SeekBar maxFreq = findViewById(R.id.maxFreq);
