@@ -30,9 +30,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Get max and min freq from cpuinfo
         try {
-            Process p = Runtime.getRuntime().exec("su -c \"cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_m*_freq\"");
+            Process p = Runtime.getRuntime().exec("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
             BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
+            try{ Thread.sleep(1000, 0); } catch(Exception e) {e.printStackTrace();}
             int read;
             char[] buffer = new char[4096];
             StringBuffer output = new StringBuffer();
