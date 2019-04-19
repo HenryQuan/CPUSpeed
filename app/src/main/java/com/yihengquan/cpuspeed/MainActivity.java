@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             // If input is a number
             int speed = Integer.parseInt(input);
             int core = Runtime.getRuntime().availableProcessors();
-            setCPUSpeed(speed, core);
+            setCPUSpeed(speed, speed, core);
         } catch (NumberFormatException e) {
             // Not valid input
             Toast.makeText(this, "Input is not valid", Toast.LENGTH_SHORT).show();
@@ -133,16 +133,17 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Set CPU frequency
-     * @param speed
+     * @param maxSpeed
+     * @param minSpeed
      * @param core
      */
-    private void setCPUSpeed(int speed, int core) {
+    private void setCPUSpeed(int maxSpeed, int minSpeed, int core) {
         // Get a list for commands
         ArrayList<String> commands = new ArrayList<>();
         for (int i = 0; i < core; i++) {
             String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
             // Change to 644 for changing value and then change it back (from Kernel Adiutor)
-            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, speed, path, path));
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, maxSpeed, path, path));
         }
 
         try {
