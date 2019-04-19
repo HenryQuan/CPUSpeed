@@ -26,30 +26,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        // Get max and min freq from cpuinfo
-        try {
-            Process p = Runtime.getRuntime().exec("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            try{ Thread.sleep(1000, 0); } catch(Exception e) {e.printStackTrace();}
-            int read;
-            char[] buffer = new char[4096];
-            StringBuffer output = new StringBuffer();
-            while ((read = reader.read(buffer)) > 0) {
-                output.append(buffer, 0, read);
+        if (!findBinary("su")) {
+            // Empty screen for non-rooted devices
+            Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
+        } else {
+            setContentView(R.layout.activity_main);
+            // Get max and min freq from cpuinfo
+            try {
+                Process p = Runtime.getRuntime().exec("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                try{ Thread.sleep(1000, 0); } catch(Exception e) {e.printStackTrace();}
+                int read;
+                char[] buffer = new char[4096];
+                StringBuffer output = new StringBuffer();
+                while ((read = reader.read(buffer)) > 0) {
+                    output.append(buffer, 0, read);
+                }
+                reader.close();
+                p.waitFor();
+
+                Toast.makeText(this, output.toString(), Toast.LENGTH_SHORT).show();
+
+                SeekBar maxFreq = findViewById(R.id.maxFreq);
+                maxFreq.setMax(2900000);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            reader.close();
-            p.waitFor();
-
-            Toast.makeText(this, output.toString(), Toast.LENGTH_SHORT).show();
-
-            SeekBar maxFreq = findViewById(R.id.maxFreq);
-            maxFreq.setMax(2900000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -69,6 +74,24 @@ public class MainActivity extends AppCompatActivity {
             // Not valid input
             Toast.makeText(this, "Input is not valid", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * Find binary from https://stackoverflow.com/questions/19288463/how-to-check-if-android-phone-is-rooted#19289543
+     * @param binaryName
+     * @return
+     */
+    private static boolean findBinary(String binaryName) {
+        boolean found = false;
+        String[] places = {"/sbin/", "/system/bin/", "/system/xbin/", "/data/local/xbin/",
+                "/data/local/bin/", "/system/sd/xbin/", "/system/bin/failsafe/", "/data/local/"};
+        for (String where : places) {
+            if ( new File( where + binaryName ).exists() ) {
+                found = true;
+                break;
+            }
+        }
+        return found;
     }
 
     private void setCPUSpeed(int speed, int core) {
