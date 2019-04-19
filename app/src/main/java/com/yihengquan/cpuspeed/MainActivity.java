@@ -1,5 +1,6 @@
 package com.yihengquan.cpuspeed;
 
+import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -24,6 +25,18 @@ public class MainActivity extends AppCompatActivity {
 
     private int currMaxFreq;
     private int currMinFreq;
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Prevent restarting activity
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_main);
+        } else {
+            setContentView(R.layout.activity_main);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
