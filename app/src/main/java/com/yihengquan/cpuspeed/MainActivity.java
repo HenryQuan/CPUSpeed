@@ -46,7 +46,10 @@ public class MainActivity extends AppCompatActivity {
                 reader.close();
                 p.waitFor();
 
-                Toast.makeText(this, output.toString(), Toast.LENGTH_SHORT).show();
+                String[] shell = output.toString().split("\n");
+                minFreqInfo = Integer.parseInt(shell[0]);
+                maxFreqInfo = Integer.parseInt(shell[1]);
+                Toast.makeText(this, String.format(Locale.ENGLISH,"Max: %d\nMin: %d", maxFreqInfo, minFreqInfo), Toast.LENGTH_SHORT).show();
 
                 SeekBar maxFreq = findViewById(R.id.maxFreq);
                 maxFreq.setMax(2900000);
