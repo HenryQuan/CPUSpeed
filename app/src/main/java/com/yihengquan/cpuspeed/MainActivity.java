@@ -3,9 +3,6 @@ package com.yihengquan.cpuspeed;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,22 +14,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
     private int maxFreqInfo;
     private int minFreqInfo;
     private int freqDiff;
+    private int core = Runtime.getRuntime().availableProcessors();
 
-    private int currMaxFreqInfo;
-    private int currMinFreqInfo;
+    private int currMaxFreq;
+    private int currMinFreq;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (findBinary("su")) {
+        if (!findBinary("su")) {
             // Empty screen for non-rooted devices
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
@@ -68,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         TextView maxValue = findViewById(R.id.maxFreqValue);
-                        currMaxFreqInfo = minFreqInfo + freqDiff * progress / 100;
+                        currMaxFreq = minFreqInfo + freqDiff * progress / 100;
                         // Max has to be greater than or equal to min
-                        if (currMaxFreqInfo < currMinFreqInfo) currMaxFreqInfo = currMinFreqInfo;
-                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreqInfo));
+                        if (currMaxFreq < currMinFreq) currMaxFreq = currMinFreq;
+                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
                     }
 
                     @Override
@@ -86,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         TextView minValue = findViewById(R.id.minFreqValue);
-                        currMinFreqInfo = minFreqInfo + freqDiff * progress / 100;
-                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreqInfo));
+                        currMinFreq = minFreqInfo + freqDiff * progress / 100;
+                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
                     }
 
                     @Override
@@ -101,24 +98,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public void setSpeed(View view) {
-        EditText inputBox = findViewById(R.id.speedText);
-        String input = inputBox.getText().toString();
-        // Hide virtual keyboard
-        InputMethodManager imm = (InputMethodManager)getSystemService(this.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(inputBox.getWindowToken(), 0);
-
-        try {
-            // If input is a number
-            int speed = Integer.parseInt(input);
-            int core = Runtime.getRuntime().availableProcessors();
-            setCPUSpeed(speed, speed, core);
-        } catch (NumberFormatException e) {
-            // Not valid input
-            Toast.makeText(this, "Input is not valid", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -141,6 +120,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Button clicked
+     * @param view
+     */
+    public void setSpeed(View view) {
+        setCPUSpeed(currMaxFreq, currMinFreq, core);
+    }
+
+    /**
      * Set CPU frequency
      * @param maxSpeed
      * @param minSpeed
@@ -150,7 +137,13 @@ public class MainActivity extends AppCompatActivity {
         // Get a list for commands
         ArrayList<String> commands = new ArrayList<>();
         for (int i = 0; i < core; i++) {
-            String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
+            // Min
+            String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_min_freq", i);
+            // Change to 644 for changing value and then change it back (from Kernel Adiutor)
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, minSpeed, path, path));
+
+            // Max
+            path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
             // Change to 644 for changing value and then change it back (from Kernel Adiutor)
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, maxSpeed, path, path));
         }

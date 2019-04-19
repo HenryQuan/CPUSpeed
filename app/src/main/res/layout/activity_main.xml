@@ -8,13 +8,6 @@
     android:gravity="center"
     tools:context=".MainActivity">
 
-    <EditText android:id="@+id/speedText"
-        android:hint="xxx MHz"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:singleLine="true"
-        android:imeOptions="actionDone" />
-
     <LinearLayout
         android:padding="16dp"
         android:layout_width="fill_parent"
