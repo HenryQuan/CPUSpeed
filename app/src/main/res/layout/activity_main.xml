@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:imeOptions="actionDone" />
-    <SeekBar
+    <SeekBar android:id="@+id/maxFreq"
+        android:max="100"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <Button android:id="@+id/updateBtn"
@@ -22,7 +23,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Update CPU speed" />
-    <SeekBar
+    <SeekBar android:id="@+id/minFreq"
+        android:max="100"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

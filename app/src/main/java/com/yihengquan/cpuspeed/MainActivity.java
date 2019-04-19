@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -19,10 +20,37 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
+    private int maxFreqInfo;
+    private int minFreqInfo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Get max and min freq from cpuinfo
+        try {
+            Process p = Runtime.getRuntime().exec("su -c \"cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_m*_freq\"");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            int read;
+            char[] buffer = new char[4096];
+            StringBuffer output = new StringBuffer();
+            while ((read = reader.read(buffer)) > 0) {
+                output.append(buffer, 0, read);
+            }
+            reader.close();
+            p.waitFor();
+
+            Toast.makeText(this, output.toString(), Toast.LENGTH_SHORT).show();
+
+            SeekBar maxFreq = findViewById(R.id.maxFreq);
+            maxFreq.setMax(2900000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setSpeed(View view) {
