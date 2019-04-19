@@ -30,6 +30,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
         <TextView android:id="@+id/maxFreqValue"
+            android:text="... MHz"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -56,6 +57,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
         <TextView android:id="@+id/minFreqValue"
+            android:text="... MHz"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>

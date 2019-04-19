@@ -7,6 +7,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -55,8 +56,9 @@ public class MainActivity extends AppCompatActivity {
                 SeekBar maxFreq = findViewById(R.id.maxFreq);
                 maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
-                        Toast.makeText(getApplicationContext(), "Hello" ,Toast.LENGTH_LONG).show();
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        TextView maxValue = findViewById(R.id.maxFreqValue);
+                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", maxFreqInfo * progress / 100));
                     }
 
                     @Override
@@ -69,8 +71,9 @@ public class MainActivity extends AppCompatActivity {
                 SeekBar minFreq = findViewById(R.id.minFreq);
                 minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
-                        Toast.makeText(getApplicationContext(), "Hello",Toast.LENGTH_LONG).show();
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        TextView minValue = findViewById(R.id.minFreqValue);
+                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", maxFreqInfo * progress / 100));
                     }
 
                     @Override
