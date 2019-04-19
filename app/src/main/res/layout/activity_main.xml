@@ -22,7 +22,6 @@
                 android:layout_height="wrap_content" />
             <SeekBar android:id="@+id/maxFreq"
                 android:max="100"
-                android:progress="100"
                 android:layout_weight = "1"
                 android:layout_gravity="center_vertical"
                 android:layout_width="0dp"

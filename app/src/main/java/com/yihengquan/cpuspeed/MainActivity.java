@@ -47,72 +47,98 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
             setContentView(R.layout.activity_main);
-            // Get max and min freq from cpuinfo
-            try {
-                Process p = Runtime.getRuntime().exec("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                try{ Thread.sleep(1000, 0); } catch(Exception e) {e.printStackTrace();}
-                int read;
-                char[] buffer = new char[4096];
-                StringBuffer output = new StringBuffer();
-                while ((read = reader.read(buffer)) > 0) {
-                    output.append(buffer, 0, read);
+
+            // Get cpuinfo
+            String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+            String[] shell = output.split("\n");
+            minFreqInfo = Integer.parseInt(shell[0]);
+            maxFreqInfo = Integer.parseInt(shell[1]);
+            freqDiff = maxFreqInfo - minFreqInfo;
+            Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+
+            // Get current scaling
+            output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
+            shell = output.split("\n");
+
+            currMinFreq = Integer.parseInt(shell[0]);
+            currMaxFreq = Integer.parseInt(shell[1]);
+
+            TextView minValue = findViewById(R.id.minFreqValue);
+            minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
+            TextView maxValue = findViewById(R.id.maxFreqValue);
+            maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+
+            // Update freq when seek bar changed
+            SeekBar maxFreq = findViewById(R.id.maxFreq);
+            SeekBar minFreq = findViewById(R.id.minFreq);
+
+            // Update progress (remember to x100 first)
+            maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
+            minFreq.setProgress((currMinFreq - minFreqInfo)  * 100 / freqDiff);
+
+            maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    TextView maxValue = findViewById(R.id.maxFreqValue);
+                    currMaxFreq = minFreqInfo + freqDiff * progress / 100;
+                    // Max has to be greater than or equal to min
+                    if (currMaxFreq < currMinFreq) currMaxFreq = currMinFreq;
+                    maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
                 }
-                reader.close();
-                p.waitFor();
 
-                String[] shell = output.toString().split("\n");
-                minFreqInfo = Integer.parseInt(shell[0]);
-                maxFreqInfo = Integer.parseInt(shell[1]);
-                freqDiff = maxFreqInfo - minFreqInfo;
-                Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) { }
 
-                TextView minValue = findViewById(R.id.minFreqValue);
-                minValue.setText(String.format(Locale.ENGLISH,"%d MHz", minFreqInfo));
-                TextView maxValue = findViewById(R.id.maxFreqValue);
-                maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", maxFreqInfo));
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) { }
+            });
 
-                // Update freq when seek bar changed
-                SeekBar maxFreq = findViewById(R.id.maxFreq);
-                maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        TextView maxValue = findViewById(R.id.maxFreqValue);
-                        currMaxFreq = minFreqInfo + freqDiff * progress / 100;
-                        // Max has to be greater than or equal to min
-                        if (currMaxFreq < currMinFreq) currMaxFreq = currMinFreq;
-                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
-                    }
+            minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    TextView minValue = findViewById(R.id.minFreqValue);
+                    currMinFreq = minFreqInfo + freqDiff * progress / 100;
+                    minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
+                }
 
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) { }
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) { }
 
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) { }
-                });
-
-                SeekBar minFreq = findViewById(R.id.minFreq);
-                minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        TextView minValue = findViewById(R.id.minFreqValue);
-                        currMinFreq = minFreqInfo + freqDiff * progress / 100;
-                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) { }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) { }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) { }
+            });
         }
     }
+
+    /**
+     * Get output by running command
+     * @param command
+     * @return
+     */
+    private static String getOutputFromShell(String command) {
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            try{ Thread.sleep(1000, 0); } catch(Exception e) {e.printStackTrace();}
+            int read;
+            char[] buffer = new char[4096];
+            StringBuffer output = new StringBuffer();
+            while ((read = reader.read(buffer)) > 0) {
+                output.append(buffer, 0, read);
+            }
+            reader.close();
+            p.waitFor();
+
+            return output.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return  "";
+    }
+
 
     /**
      * Find binary from https://stackoverflow.com/questions/19288463/how-to-check-if-android-phone-is-rooted#19289543
