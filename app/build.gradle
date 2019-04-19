@@ -6,7 +6,7 @@ android {
         applicationId "com.yihengquan.cpuspeed"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 1012
+        versionCode 1013
         versionName "1.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

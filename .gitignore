@@ -2,6 +2,7 @@
 .gradle
 .idea
 app/release/
+logo/AppIcon
 /local.properties
 /.idea/caches
 /.idea/libraries

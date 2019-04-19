@@ -18,13 +18,13 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int maxFreqInfo;
-    private int minFreqInfo;
+    private int maxFreqInfo = 0;
+    private int minFreqInfo = 0;
     private int freqDiff;
     private int core = Runtime.getRuntime().availableProcessors();
 
-    private int currMaxFreq;
-    private int currMinFreq;
+    private int currMaxFreq = 0;
+    private int currMinFreq = 0;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -53,27 +53,32 @@ public class MainActivity extends AppCompatActivity {
                 "&& cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
             System.out.println(String.format("Shell - |%s|", output));
             if(output != null && !output.isEmpty()) {
-                String[] shell = output.split("\n");
-                minFreqInfo = Integer.parseInt(shell[0]);
-                maxFreqInfo = Integer.parseInt(shell[1]);
-
-                currMinFreq = Integer.parseInt(shell[2]);
-                currMaxFreq = Integer.parseInt(shell[3]);
-                freqDiff = maxFreqInfo - minFreqInfo;
-                Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
-
-                TextView minValue = findViewById(R.id.minFreqValue);
-                minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
-                TextView maxValue = findViewById(R.id.maxFreqValue);
-                maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
-
                 // Update freq when seek bar changed
                 SeekBar maxFreq = findViewById(R.id.maxFreq);
                 SeekBar minFreq = findViewById(R.id.minFreq);
 
-                // Update progress (remember to x100 first)
-                maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
-                minFreq.setProgress((currMinFreq - minFreqInfo)  * 100 / freqDiff);
+                // Catch errors...
+                try {
+                    String[] shell = output.split("\n");
+                    minFreqInfo = Integer.parseInt(shell[0]);
+                    maxFreqInfo = Integer.parseInt(shell[1]);
+                    freqDiff = maxFreqInfo - minFreqInfo;
+
+                    currMinFreq = Integer.parseInt(shell[2]);
+                    currMaxFreq = Integer.parseInt(shell[3]);
+                    Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+
+                    TextView minValue = findViewById(R.id.minFreqValue);
+                    minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
+                    TextView maxValue = findViewById(R.id.maxFreqValue);
+                    maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+
+                    // Update progress (remember to x100 first)
+                    maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
+                    minFreq.setProgress((currMinFreq - minFreqInfo)  * 100 / freqDiff);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -165,7 +170,11 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void setSpeed(View view) {
-        setCPUSpeed(currMaxFreq, currMinFreq, core);
+        if (maxFreqInfo == 0 || minFreqInfo == 0) {
+            Toast.makeText(this, String.format(Locale.ENGLISH,"Error: unknown clock speed", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+        } else {
+            setCPUSpeed(currMaxFreq, currMinFreq, core);
+        }
     }
 
     /**
