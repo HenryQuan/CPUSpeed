@@ -39,62 +39,76 @@ public class MainActivity extends AppCompatActivity {
         if (!findBinary("su")) {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
-            // Get cpuinfo and current freq in one go
+            // Make sure cpu folders have the right permission
+            try {
+                Process p = Runtime.getRuntime().exec("su");
+                DataOutputStream os = new DataOutputStream(p.getOutputStream());
+                os.writeBytes("chmod 755 /sys/devices/system/cpu/cpu*");
+                os.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq " +
-                    "&& cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
-            String[] shell = output.split("\n");
-            minFreqInfo = Integer.parseInt(shell[0]);
-            maxFreqInfo = Integer.parseInt(shell[1]);
+                "&& cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
+            System.out.println(String.format("Shell - |%s|", output));
+            if(output != null && !output.isEmpty()) {
+                String[] shell = output.split("\n");
+                minFreqInfo = Integer.parseInt(shell[0]);
+                maxFreqInfo = Integer.parseInt(shell[1]);
 
-            currMinFreq = Integer.parseInt(shell[2]);
-            currMaxFreq = Integer.parseInt(shell[3]);
-            freqDiff = maxFreqInfo - minFreqInfo;
-            Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
+                currMinFreq = Integer.parseInt(shell[2]);
+                currMaxFreq = Integer.parseInt(shell[3]);
+                freqDiff = maxFreqInfo - minFreqInfo;
+                Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
 
-            TextView minValue = findViewById(R.id.minFreqValue);
-            minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
-            TextView maxValue = findViewById(R.id.maxFreqValue);
-            maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+                TextView minValue = findViewById(R.id.minFreqValue);
+                minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
+                TextView maxValue = findViewById(R.id.maxFreqValue);
+                maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
 
-            // Update freq when seek bar changed
-            SeekBar maxFreq = findViewById(R.id.maxFreq);
-            SeekBar minFreq = findViewById(R.id.minFreq);
+                // Update freq when seek bar changed
+                SeekBar maxFreq = findViewById(R.id.maxFreq);
+                SeekBar minFreq = findViewById(R.id.minFreq);
 
-            // Update progress (remember to x100 first)
-            maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
-            minFreq.setProgress((currMinFreq - minFreqInfo)  * 100 / freqDiff);
+                // Update progress (remember to x100 first)
+                maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
+                minFreq.setProgress((currMinFreq - minFreqInfo)  * 100 / freqDiff);
 
-            maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    TextView maxValue = findViewById(R.id.maxFreqValue);
-                    currMaxFreq = minFreqInfo + freqDiff * progress / 100;
-                    // Max has to be greater than or equal to min
-                    if (currMaxFreq < currMinFreq) currMaxFreq = currMinFreq;
-                    maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
-                }
+                maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        TextView maxValue = findViewById(R.id.maxFreqValue);
+                        currMaxFreq = minFreqInfo + freqDiff * progress / 100;
+                        // Max has to be greater than or equal to min
+                        if (currMaxFreq < currMinFreq) currMaxFreq = currMinFreq;
+                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+                    }
 
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) { }
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) { }
 
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) { }
-            });
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) { }
+                });
 
-            minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    TextView minValue = findViewById(R.id.minFreqValue);
-                    currMinFreq = minFreqInfo + freqDiff * progress / 100;
-                    minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
-                }
+                minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        TextView minValue = findViewById(R.id.minFreqValue);
+                        currMinFreq = minFreqInfo + freqDiff * progress / 100;
+                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
+                    }
 
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) { }
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) { }
 
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) { }
-            });
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) { }
+                });
+            } else {
+
+            }
         }
     }
 
