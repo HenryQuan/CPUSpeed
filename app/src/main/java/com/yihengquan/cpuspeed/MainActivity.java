@@ -41,13 +41,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        if (!findBinary("su")) {
-            // Empty screen for non-rooted devices
+        if (findBinary("su")) {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
-            setContentView(R.layout.activity_main);
-
             // Get cpuinfo
             String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
             String[] shell = output.split("\n");
@@ -197,14 +195,10 @@ public class MainActivity extends AppCompatActivity {
                 os.flush();
             }
 
-            p.waitFor();
-            // Wait for code to run
             Toast.makeText(this, String.format(Locale.ENGLISH,"Success", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, String.format(Locale.ENGLISH,"Something went wrong", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 }
