@@ -23,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
 
     private int maxFreqInfo;
     private int minFreqInfo;
+    private int freqDiff;
+
+    private int currMaxFreqInfo;
+    private int currMinFreqInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] shell = output.toString().split("\n");
                 minFreqInfo = Integer.parseInt(shell[0]);
                 maxFreqInfo = Integer.parseInt(shell[1]);
+                freqDiff = maxFreqInfo - minFreqInfo;
                 Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
 
                 TextView minValue = findViewById(R.id.minFreqValue);
@@ -63,7 +68,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         TextView maxValue = findViewById(R.id.maxFreqValue);
-                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", maxFreqInfo * progress / 100));
+                        currMaxFreqInfo = minFreqInfo + freqDiff * progress / 100;
+                        // Max has to be greater than or equal to min
+                        if (currMaxFreqInfo < currMinFreqInfo) currMaxFreqInfo = currMinFreqInfo;
+                        maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreqInfo));
                     }
 
                     @Override
@@ -78,7 +86,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         TextView minValue = findViewById(R.id.minFreqValue);
-                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", maxFreqInfo * progress / 100));
+                        currMinFreqInfo = minFreqInfo + freqDiff * progress / 100;
+                        minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreqInfo));
                     }
 
                     @Override
