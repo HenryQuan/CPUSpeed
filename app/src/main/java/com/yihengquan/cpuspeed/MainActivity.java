@@ -1,6 +1,8 @@
 package com.yihengquan.cpuspeed;
 
+import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        showWelcomeDialog();
+        showWhatsNewDialog();
 
         if (!findBinary("su")) {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
@@ -126,6 +131,36 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+    }
+
+    /**
+     * Show a simple dialog to say hello and some warnings
+     */
+    private void showWelcomeDialog() {
+        new AlertDialog.Builder(this)
+            .setTitle("Thank you for downloading CPUSpeed")
+            .setMessage("Are you sure you want to delete this entry?")
+
+            // Specifying a listener allows you to take an action before dismissing the dialog.
+            // The dialog is automatically dismissed when a dialog button is clicked.
+            .setPositiveButton(android.R.string.ok, null)
+            .setCancelable(false)
+            .show();
+    }
+
+    /**
+     * Show what's new in this version
+     */
+    private void showWhatsNewDialog() {
+        new AlertDialog.Builder(this)
+            .setTitle("Version 1.0.2")
+            .setMessage("- Improve sliding experience\n- Support more devices")
+
+            // Specifying a listener allows you to take an action before dismissing the dialog.
+            // The dialog is automatically dismissed when a dialog button is clicked.
+            .setPositiveButton(android.R.string.ok, null)
+            .setCancelable(false)
+            .show();
     }
 
     /**
