@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, minSpeed, path, path));
         }
 
-        System.out.println(commands.toString());
+        // System.out.println(commands.toString());
 
         try {
             // Try to get root and run the script
