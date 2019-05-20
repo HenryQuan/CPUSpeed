@@ -1,6 +1,7 @@
 package com.yihengquan.cpuspeed;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     private int currMaxFreq = 0;
     private int currMinFreq = 0;
+
+    private final String appVersion = "1.0.2";
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -138,31 +141,50 @@ public class MainActivity extends AppCompatActivity {
      * Show a simple dialog to say hello and some warnings
      */
     private boolean showWelcomeDialog() {
-        new AlertDialog.Builder(this)
-            .setTitle("CPUSpeed")
-            .setMessage("Thank you for downloading this app.\n\nPlease note that if you underclock your device, it might freeze or even shutdown in the worst case. If you overclock your device, it might become warm and battery will run out quickly.")
+        SharedPreferences pref = getSharedPreferences("CPUSpeed", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        boolean first = pref.getBoolean("Welcome", true);
 
-            // Specifying a listener allows you to take an action before dismissing the dialog.
-            // The dialog is automatically dismissed when a dialog button is clicked.
-            .setPositiveButton(android.R.string.ok, null)
-            .setCancelable(false)
-            .show();
-        return true;
+        if (first) {
+            new AlertDialog.Builder(this)
+                .setTitle("CPUSpeed")
+                .setMessage("Thank you for downloading this app.\n\nPlease note that if you underclock your device, it might freeze or even shutdown in the worst case. If you overclock your device, it might become warm and battery will run out quickly.")
+
+                // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton(android.R.string.ok, null)
+                .setCancelable(false)
+                .show();
+            // Set to false
+            editor.putBoolean("Welcome", false);
+            editor.apply();
+        }
+
+        return first;
     }
 
     /**
      * Show what's new in this version
      */
     private void showWhatsNewDialog() {
-        new AlertDialog.Builder(this)
-            .setTitle("Version 1.0.2")
-            .setMessage("- Improve sliding experience\n- Support more devices")
+        SharedPreferences pref = getSharedPreferences("CPUSpeed", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        boolean whatsnew = pref.getBoolean(appVersion, true);
 
-            // Specifying a listener allows you to take an action before dismissing the dialog.
-            // The dialog is automatically dismissed when a dialog button is clicked.
-            .setPositiveButton(android.R.string.ok, null)
-            .setCancelable(false)
-            .show();
+        if (whatsnew) {
+            new AlertDialog.Builder(this)
+                .setTitle(String.format("Version %s", appVersion))
+                .setMessage("- Improve sliding experience\n- Support more devices")
+
+                // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton(android.R.string.ok, null)
+                .setCancelable(false)
+                .show();
+            // Set to false
+            editor.putBoolean(appVersion, false);
+            editor.apply();
+        }
     }
 
     /**
