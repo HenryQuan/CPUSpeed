@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(String.format("Shell - |%s|", output));
             if(output != null && !output.isEmpty()) {
                 // Update freq when seek bar changed
-                SeekBar maxFreq = findViewById(R.id.maxFreq);
-                SeekBar minFreq = findViewById(R.id.minFreq);
+                final SeekBar maxFreq = findViewById(R.id.maxFreq);
+                final SeekBar minFreq = findViewById(R.id.minFreq);
 
                 // Catch errors...
                 try {
@@ -80,13 +80,19 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
+                final TextView maxValue = findViewById(R.id.maxFreqValue);
+                final TextView minValue = findViewById(R.id.minFreqValue);
+
                 maxFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        TextView maxValue = findViewById(R.id.maxFreqValue);
                         currMaxFreq = minFreqInfo + freqDiff * progress / 100;
                         // Max has to be greater than or equal to min
-                        if (currMaxFreq < currMinFreq) currMaxFreq = currMinFreq;
+                        if (currMaxFreq < currMinFreq) {
+                            // Also move minFreq
+                            minFreq.setProgress(progress);
+                            minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+                        }
                         maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
                     }
 
@@ -100,8 +106,13 @@ public class MainActivity extends AppCompatActivity {
                 minFreq.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        TextView minValue = findViewById(R.id.minFreqValue);
                         currMinFreq = minFreqInfo + freqDiff * progress / 100;
+                        // Min has to be less than or equal to max
+                        if (currMinFreq > currMaxFreq) {
+                            // Move maxFreq
+                            maxFreq.setProgress(progress);
+                            maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+                        }
                         minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
                     }
 
