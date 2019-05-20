@@ -3,6 +3,7 @@ package com.yihengquan.cpuspeed;
 import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -51,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
 
             String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq " +
                 "&& cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
-            System.out.println(String.format("Shell - |%s|", output));
             if(output != null && !output.isEmpty()) {
                 // Update freq when seek bar changed
                 final SeekBar maxFreq = findViewById(R.id.maxFreq);
@@ -197,17 +197,33 @@ public class MainActivity extends AppCompatActivity {
     private void setCPUSpeed(int maxSpeed, int minSpeed, int core) {
         // Get a list for commands
         ArrayList<String> commands = new ArrayList<>();
-        for (int i = 0; i < core; i++) {
-            // Min
-            String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_min_freq", i);
-            // Change to 644 for changing value and then change it back (from Kernel Adiutor)
-            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, minSpeed, path, path));
-
+        int i;
+        for (i = 0; i < core; i++) {
             // Max
-            path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
+            String path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i);
             // Change to 644 for changing value and then change it back (from Kernel Adiutor)
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, maxSpeed, path, path));
+
+            // Min
+            path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_min_freq", i);
+            // Change to 644 for changing value and then change it back (from Kernel Adiutor)
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, minSpeed, path, path));
         }
+
+
+        for (i = 0; i < core; i++) {
+            String path = "/sys/module/msm_performance/parameters/cpu_max_freq";
+            // Max
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, maxSpeed, path, path));
+        }
+
+        for (i = 0; i < core; i++) {
+            String path = "/sys/module/msm_performance/parameters/cpu_min_freq";
+            // Min
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, minSpeed, path, path));
+        }
+
+        System.out.println(commands.toString());
 
         try {
             // Try to get root and run the script
