@@ -39,8 +39,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        showWelcomeDialog();
-        showWhatsNewDialog();
+        if (!showWelcomeDialog()) {
+            showWhatsNewDialog();
+        }
 
         if (!findBinary("su")) {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
@@ -136,16 +137,17 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Show a simple dialog to say hello and some warnings
      */
-    private void showWelcomeDialog() {
+    private boolean showWelcomeDialog() {
         new AlertDialog.Builder(this)
-            .setTitle("Thank you for downloading CPUSpeed")
-            .setMessage("Are you sure you want to delete this entry?")
+            .setTitle("CPUSpeed")
+            .setMessage("Thank you for downloading this app.\n\nPlease note that if you underclock your device, it might freeze or even shutdown in the worst case. If you overclock your device, it might become warm and battery will run out quickly.")
 
             // Specifying a listener allows you to take an action before dismissing the dialog.
             // The dialog is automatically dismissed when a dialog button is clicked.
             .setPositiveButton(android.R.string.ok, null)
             .setCancelable(false)
             .show();
+        return true;
     }
 
     /**
