@@ -12,6 +12,8 @@
         android:layout_height="wrap_content"
         app:title="@string/app_name"
         app:titleTextColor="@android:color/white"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:background="@color/colorPrimary"/>
 
     <LinearLayout
