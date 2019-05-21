@@ -1,5 +1,5 @@
 # CPU Speed
-Set cpu frequency easily for rooted android phones.
+Set cpu speed easily for rooted android phones.
 
 ## Motivation
 ### Surface Pro
@@ -13,4 +13,4 @@ OnePlus is also really fast but have you ever wondered why? It is simple. Always
 
 ## Download
 - [Google Play](https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed)
-- [GitHub]()
+- [GitHub](https://github.com/HenryQuan/CPUSpeed/releases/latest)
