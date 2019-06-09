@@ -1,6 +1,8 @@
 # CPU Speed
 Set cpu speed easily for rooted android phones.
 
+I am changing to Samsung A70 soon and I will sell my OnePlus 5 after this app is completed.
+
 ## Motivation
 This is my first ever native Android app written in Java. I am using React Native a lot and learning Flutter recently. Is native development gonna die? I don't think so. React Native and Flutter are sure great and faster. However, you need to know native. Otherwise, what's different from a website (web app) if you only want to cross multiple platforms? I should do more and know more about native development as well. Time to slow down. What makes IOS IOS and what makes Android Android? What is an app?
 
