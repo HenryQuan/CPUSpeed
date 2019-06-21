@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -86,15 +87,23 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     String[] shell = output.split("\n");
                     //System.out.println(output);
+                    // Store cpu info
+                    HashMap<String, Integer> speedInfo = new HashMap<>();
 
                     // Find max values
                     for (int i = 0; i < this.core; i++) {
                         // First and third values
-                        int maxInfo = Integer.parseInt(shell[i * 4]);
+                        String maxInfoStr = shell[i * 4];
+                        int maxInfo = Integer.parseInt(maxInfoStr);
                         int maxCurr = Integer.parseInt(shell[i * 4 + 2]);
 
                         if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo;
                         if (maxCurr > currMaxFreq) currMaxFreq = maxCurr;
+
+                        // Store max info
+                        Integer count = speedInfo.get(maxInfoStr);
+                        if (count == null) count = 0;
+                        speedInfo.put(maxInfoStr, count + 1);
                     }
 
                     // Min and curr min are current, only max values could differ
@@ -110,8 +119,16 @@ public class MainActivity extends AppCompatActivity {
                     maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
 
                     // Set cpuInfo text
+                    String infoStr = "";
+                    for (String key : speedInfo.keySet()) {
+                        int count = speedInfo.get(key);
+                        float speed = Float.parseFloat(key) / 1000000;
+                        infoStr += String.format("%d x %.2f GHz\n", count, speed);
+                    }
+                    System.out.println(infoStr);
+
                     final TextView info = findViewById(R.id.cpuInfo);
-                    info.setText("Hello World");
+                    info.setText(infoStr);
 
                     // Update progress (remember to x100 first)
                     maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
