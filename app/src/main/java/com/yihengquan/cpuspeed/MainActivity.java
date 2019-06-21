@@ -75,8 +75,8 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            String output = getOutputFromShell("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq " +
-                "&& cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq && cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
+            String output = getOutputFromShell("su -c cat /sys/devices/system/cpu/cpu*/cpufreq/*m*_freq");
+
             if(output != null && !output.isEmpty()) {
                 // Update freq when seek bar changed
                 final SeekBar maxFreq = findViewById(R.id.maxFreq);
@@ -85,12 +85,22 @@ public class MainActivity extends AppCompatActivity {
                 // Catch errors...
                 try {
                     String[] shell = output.split("\n");
-                    minFreqInfo = Integer.parseInt(shell[0]);
-                    maxFreqInfo = Integer.parseInt(shell[1]);
+                    System.out.println(output);
+
+                    // Find max
+                    for (int i = 0; i < this.core; i++) {
+                        int maxInfo = Integer.parseInt(shell[i * 4]);
+                        int maxCurr = Integer.parseInt(shell[i * 4 + 2]);
+
+                        if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo;
+                        if (maxCurr > currMaxFreq) currMaxFreq = maxCurr;
+                    }
+
+                    // Min and curr min are current, only max values could differ
+                    minFreqInfo = Integer.parseInt(shell[1]);
+                    currMinFreq = Integer.parseInt(shell[3]);
                     freqDiff = maxFreqInfo - minFreqInfo;
 
-                    currMinFreq = Integer.parseInt(shell[2]);
-                    currMaxFreq = Integer.parseInt(shell[3]);
                     Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
 
                     TextView minValue = findViewById(R.id.minFreqValue);
@@ -266,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             Process p = Runtime.getRuntime().exec(command);
             BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            try{ Thread.sleep(1000, 0); } catch(Exception e) {e.printStackTrace();}
             int read;
             char[] buffer = new char[4096];
             StringBuffer output = new StringBuffer();
@@ -343,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
         for (i = 0; i < core; i++) {
             String path = "/sys/module/msm_performance/parameters/cpu_max_freq";
             // Max
+            maxSpeed = 3000000;
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, maxSpeed, path, path));
         }
 
