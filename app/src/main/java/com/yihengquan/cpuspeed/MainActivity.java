@@ -157,9 +157,54 @@ public class MainActivity extends AppCompatActivity {
      * Show github page when pressed
      * @param item
      */
-    public void gotoGithub(MenuItem item) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HenryQuan/CPUSpeed"));
-        startActivity(browserIntent);
+    public void showAbout(MenuItem item) {
+        new AlertDialog.Builder(this)
+            .setTitle("CPUSpeed")
+            .setMessage("It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info and support me on Patreon.")
+
+            // Specifying a listener allows you to take an action before dismissing the dialog.
+            // The dialog is automatically dismissed when a dialog button is clicked.
+            .setPositiveButton("Github", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    openLink("https://github.com/HenryQuan/CPUSpeed");
+                }
+            })
+            .setCancelable(false)
+            .show();
+    }
+
+    /**
+     * Share app with a popup
+     * @param item
+     */
+    public void shareApp(MenuItem item) {
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/plain");
+        share.putExtra(Intent.EXTRA_TEXT,"https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed");
+        startActivity(Intent.createChooser(share, "Share CPUSpeed"));
+
+    }
+
+    /**
+     * Visit my patreon page
+     * @param item
+     */
+    public void gotoPatreon(MenuItem item) {
+        this.openLink("https://www.patreon.com/henryquan");
+    }
+
+    /**
+     * Open certain links
+     * @param url
+     */
+    private void openLink(String url) {
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(i);
+        } catch (Exception e) {
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

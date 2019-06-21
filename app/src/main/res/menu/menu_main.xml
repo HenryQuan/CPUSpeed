@@ -3,8 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_github"
-        android:title="Github"
-        android:onClick="gotoGithub"/>
+        android:id="@+id/menu_share"
+        android:title="Share"
+        android:onClick="shareApp"/>
+
+    <item
+        android:id="@+id/menu_support"
+        android:title="Patreon"
+        android:onClick="gotoPatreon"/>
+
+    <item
+        android:id="@+id/menu_about"
+        android:title="About"
+        android:onClick="showAbout"/>
 
 </menu>
