@@ -96,9 +96,11 @@ public class MainActivity extends AppCompatActivity {
                         String maxInfoStr = shell[i * 4];
                         int maxInfo = Integer.parseInt(maxInfoStr);
                         int maxCurr = Integer.parseInt(shell[i * 4 + 2]);
+                        int minCurr = Integer.parseInt(shell[i * 4 + 3]);
 
                         if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo;
                         if (maxCurr > currMaxFreq) currMaxFreq = maxCurr;
+                        if (minCurr > currMinFreq) currMinFreq = minCurr;
 
                         // Store max info
                         Integer count = speedInfo.get(maxInfoStr);
@@ -108,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
 
                     // Min and curr min are current, only max values could differ
                     minFreqInfo = Integer.parseInt(shell[1]);
-                    currMinFreq = Integer.parseInt(shell[3]);
                     freqDiff = maxFreqInfo - minFreqInfo;
 
                     Toast.makeText(this, String.format(Locale.ENGLISH,"%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show();
