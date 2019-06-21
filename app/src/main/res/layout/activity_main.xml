@@ -60,6 +60,13 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
+        <TextView
+            android:layout_margin="16dp"
+            android:id="@+id/cpuInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton

@@ -85,10 +85,11 @@ public class MainActivity extends AppCompatActivity {
                 // Catch errors...
                 try {
                     String[] shell = output.split("\n");
-                    System.out.println(output);
+                    //System.out.println(output);
 
-                    // Find max
+                    // Find max values
                     for (int i = 0; i < this.core; i++) {
+                        // First and third values
                         int maxInfo = Integer.parseInt(shell[i * 4]);
                         int maxCurr = Integer.parseInt(shell[i * 4 + 2]);
 
@@ -107,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
                     minValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMinFreq));
                     TextView maxValue = findViewById(R.id.maxFreqValue);
                     maxValue.setText(String.format(Locale.ENGLISH,"%d MHz", currMaxFreq));
+
+                    // Set cpuInfo text
+                    final TextView info = findViewById(R.id.cpuInfo);
+                    info.setText("Hello World");
 
                     // Update progress (remember to x100 first)
                     maxFreq.setProgress((currMaxFreq - minFreqInfo) * 100 / freqDiff);
