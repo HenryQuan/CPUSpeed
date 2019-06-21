@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                     openLink("https://github.com/HenryQuan/CPUSpeed");
                 }
             })
-            .setCancelable(false)
+            .setCancelable(true)
             .show();
     }
 
