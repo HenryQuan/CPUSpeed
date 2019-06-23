@@ -68,27 +68,31 @@
             android:layout_height="wrap_content"
             android:text="..." />
 
-
-        <LinearLayout
-            android:id="@+id/ads_banner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical"/>
-
     </LinearLayout>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/updateBtn"
-        android:onClick="setSpeed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_save"
-        android:tint="@android:color/white"
-        app:elevation="4dp"
-        android:layout_gravity="center"
-        android:layout_margin="16dp"
+
+
+    <LinearLayout
+        android:id="@+id/ads_banner"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/updateBtn"
+            android:onClick="setSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_save"
+            android:tint="@android:color/white"
+            app:elevation="4dp"
+            android:layout_gravity="center"
+            android:layout_margin="16dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true" />
+    </LinearLayout>
+
+
 
 </RelativeLayout>

@@ -72,12 +72,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Setup banner
-        banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
-        LinearLayout adBanner = findViewById(R.id.ads_banner);
-        adBanner.addView(banner);
-        banner.loadAd();
-
         if (!showWelcomeDialog()) {
             showWhatsNewDialog();
         }
@@ -203,6 +197,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+
+        // Setup banner
+        banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
+        banner.loadAd();
+        LinearLayout adBanner = findViewById(R.id.ads_banner);
+        adBanner.addView(banner);
     }
 
     /**
