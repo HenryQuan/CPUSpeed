@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     // banner
     private AdView banner;
+    private Menu menu;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater m = getMenuInflater();
         m.inflate(R.menu.menu_main, menu);
+        this.menu = menu;
         return true;
     }
 
@@ -194,15 +196,22 @@ public class MainActivity extends AppCompatActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) { }
                 });
             } else {
-
+                Toast.makeText(this, "Please contact me for more info", Toast.LENGTH_LONG).show();
             }
         }
 
+        // Set ads state
+        boolean showAds = getAds();
+        MenuItem ads = this.menu.findItem(R.id.menu_ads);
+        ads.setChecked(showAds);
+
         // Setup banner
-        banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
-        banner.loadAd();
-        LinearLayout adBanner = findViewById(R.id.ads_banner);
-        adBanner.addView(banner);
+        if (showAds) {
+            banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
+            banner.loadAd();
+            LinearLayout adBanner = findViewById(R.id.ads_banner);
+            adBanner.addView(banner);
+        }
     }
 
     /**
@@ -235,8 +244,66 @@ public class MainActivity extends AppCompatActivity {
         share.setType("text/plain");
         share.putExtra(Intent.EXTRA_TEXT,"https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed");
         startActivity(Intent.createChooser(share, "Share CPUSpeed"));
-
     }
+
+    /**
+     * Show or hide ads
+     * @param item
+     */
+    public void toggleAds(MenuItem item) {
+        MenuItem ads = findViewById(R.id.menu_ads);
+        boolean newState = !ads.isChecked();
+        ads.setChecked(newState);
+        this.setAds(newState);
+    }
+
+    /**
+     * Get current state of ads
+     * @return whether show or hide ads
+     */
+    private boolean getAds() {
+        SharedPreferences pref = getSharedPreferences("CPUSpeed", MODE_PRIVATE);
+        boolean ADS = pref.getBoolean("ADS", true);
+        return ADS;
+    }
+
+    /**
+     * Set state for ads
+     * @param state true of false
+     */
+    private void setAds(final Boolean state) {
+        SharedPreferences pref = getSharedPreferences("CPUSpeed", MODE_PRIVATE);
+        final SharedPreferences.Editor editor = pref.edit();
+        if (!state) {
+            final MenuItem ads = this.menu.findItem(R.id.menu_ads);
+            new AlertDialog.Builder(this)
+                .setTitle("Support CPUSpeed")
+                .setPositiveButton("I want to support developer", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // update state
+                        editor.putBoolean("ADS", true);
+                        editor.apply();
+                        ads.setChecked(true);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // update state
+                        editor.putBoolean("ADS", state);
+                        editor.apply();
+                    }
+                })
+                .setCancelable(false)
+                .show();
+        } else {
+            // update state
+            editor.putBoolean("ADS", state);
+            editor.apply();
+        }
+    }
+
 
     /**
      * Email me with feed back

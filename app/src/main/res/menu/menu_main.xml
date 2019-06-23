@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/menu_share"
-        android:title="Share"
-        android:onClick="shareApp"/>
+        android:id="@+id/menu_ads"
+        android:title="Ads"
+        android:checkable="true"
+        android:checked="true"
+        android:onClick="toggleAds"/>
 
     <item
         android:id="@+id/menu_support"
@@ -16,6 +17,11 @@
         android:id="@+id/menu_feedback"
         android:title="Feedback"
         android:onClick="emailMe"/>
+
+    <item
+        android:id="@+id/menu_share"
+        android:title="Share"
+        android:onClick="shareApp"/>
 
     <item
         android:id="@+id/menu_about"
