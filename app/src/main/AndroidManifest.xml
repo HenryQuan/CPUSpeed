@@ -3,7 +3,8 @@
     package="com.yihengquan.cpuspeed">
 
     <application
-        android:allowBackup="true"
+        android:name=".CPUSpeed"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
