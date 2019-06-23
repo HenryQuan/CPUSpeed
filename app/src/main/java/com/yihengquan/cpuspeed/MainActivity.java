@@ -56,6 +56,12 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater m = getMenuInflater();
         m.inflate(R.menu.menu_main, menu);
         this.menu = menu;
+
+        // Set ads state
+        boolean showAds = getAds();
+        MenuItem ads = this.menu.findItem(R.id.menu_ads);
+        ads.setChecked(showAds);
+
         return true;
     }
 
@@ -200,13 +206,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Set ads state
-        boolean showAds = getAds();
-        MenuItem ads = this.menu.findItem(R.id.menu_ads);
-        ads.setChecked(showAds);
-
         // Setup banner
-        if (showAds) {
+        if (getAds()) {
             banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
             banner.loadAd();
             LinearLayout adBanner = findViewById(R.id.ads_banner);
@@ -251,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item
      */
     public void toggleAds(MenuItem item) {
-        MenuItem ads = findViewById(R.id.menu_ads);
+        MenuItem ads = this.menu.findItem(R.id.menu_ads);
         boolean newState = !ads.isChecked();
         ads.setChecked(newState);
         this.setAds(newState);
@@ -277,8 +278,9 @@ public class MainActivity extends AppCompatActivity {
         if (!state) {
             final MenuItem ads = this.menu.findItem(R.id.menu_ads);
             new AlertDialog.Builder(this)
-                .setTitle("Support CPUSpeed")
-                .setPositiveButton("I want to support developer", new DialogInterface.OnClickListener() {
+                .setTitle("CPUSpeed")
+                .setMessage("Do you want to keep supporting CPUSpeed with ads?")
+                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // update state
@@ -287,12 +289,15 @@ public class MainActivity extends AppCompatActivity {
                         ads.setChecked(true);
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // update state
                         editor.putBoolean("ADS", state);
                         editor.apply();
+                        ads.setChecked(state);
+                        finish();
+                        startActivity(getIntent());
                     }
                 })
                 .setCancelable(false)
@@ -301,6 +306,9 @@ public class MainActivity extends AppCompatActivity {
             // update state
             editor.putBoolean("ADS", state);
             editor.apply();
+
+            finish();
+            startActivity(getIntent());
         }
     }
 
