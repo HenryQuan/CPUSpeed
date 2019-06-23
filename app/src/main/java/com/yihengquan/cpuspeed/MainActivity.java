@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private int currMaxFreq = 0;
     private int currMinFreq = 0;
 
-    private final String appVersion = "1.0.3";
+    private final String appVersion = "1.0.4";
 
     // banner
     private AdView banner;
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         if (whatsnew) {
             new AlertDialog.Builder(this)
                 .setTitle(String.format("Version %s", appVersion))
-                .setMessage("- Added more CPU info\n- Added about, share, support buttons\n- Bug fixed\n\nThank you for 1000 downloads ^_^")
+                .setMessage("- Added feedback button\n- Added ads\n\nThank you for 1000 downloads!")
 
                 // Specifying a listener allows you to take an action before dismissing the dialog.
                 // The dialog is automatically dismissed when a dialog button is clicked.
