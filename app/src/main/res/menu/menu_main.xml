@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/menu_ads"
-        android:title="Support CPUSPeed"
+        android:title="Support CPUSpeed"
         android:checkable="true"
         android:checked="true"
         android:onClick="toggleAds"/>
