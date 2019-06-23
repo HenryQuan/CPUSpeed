@@ -13,6 +13,11 @@
         android:onClick="gotoPatreon"/>
 
     <item
+        android:id="@+id/menu_feedback"
+        android:title="Feedback"
+        android:onClick="emailMe"/>
+
+    <item
         android:id="@+id/menu_about"
         android:title="About"
         android:onClick="showAbout"/>

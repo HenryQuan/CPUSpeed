@@ -6,8 +6,8 @@ android {
         applicationId "com.yihengquan.cpuspeed"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 1030
-        versionName "1.0.3"
+        versionCode 1040
+        versionName "1.0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

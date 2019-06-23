@@ -1,5 +1,6 @@
 package com.yihengquan.cpuspeed;
 
+import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,14 +10,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.facebook.ads.*;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -39,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
 
     private final String appVersion = "1.0.3";
 
+    // banner
+    private AdView banner;
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -52,12 +58,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        if (banner != null) banner.destroy();
+        super.onDestroy();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         // Show toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // Setup banner
+        banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
+        LinearLayout adBanner = findViewById(R.id.ads_banner);
+        adBanner.addView(banner);
+        banner.loadAd();
 
         if (!showWelcomeDialog()) {
             showWhatsNewDialog();
@@ -217,6 +236,14 @@ public class MainActivity extends AppCompatActivity {
         share.putExtra(Intent.EXTRA_TEXT,"https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed");
         startActivity(Intent.createChooser(share, "Share CPUSpeed"));
 
+    }
+
+    /**
+     * Email me with feed back
+     * @param item
+     */
+    public void emailMe(MenuItem item) {
+        this.openLink(String.format("mailto:development.henryquan@gmail.com?subject=[CPUSpeed %s] ", appVersion));
     }
 
     /**
