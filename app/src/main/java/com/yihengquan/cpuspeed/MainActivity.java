@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             showWhatsNewDialog();
         }
 
-        if (!findBinary("su")) {
+        if (!findBinary("su") && !findBinary("busybox")) {
             Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show();
         } else {
             // Make sure cpu folders have the right permission
