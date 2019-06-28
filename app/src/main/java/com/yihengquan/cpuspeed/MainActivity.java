@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private int currMaxFreq = 0;
     private int currMinFreq = 0;
 
-    private final String appVersion = "1.0.4";
+    private final String appVersion = "1.0.5";
 
     // banner
     private AdView banner;
@@ -229,7 +229,13 @@ public class MainActivity extends AppCompatActivity {
             .setPositiveButton("Github", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    openLink("https://github.com/HenryQuan/CPUSpeed");
+                openLink("https://github.com/HenryQuan/CPUSpeed");
+                }
+            })
+            .setNeutralButton("Privacy Policy", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                openLink("https://github.com/HenryQuan/CPUSpeed/blob/master/Privacy%20Policy.md");
                 }
             })
             .setCancelable(true)
@@ -379,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
         if (whatsnew) {
             new AlertDialog.Builder(this)
                 .setTitle(String.format("Version %s", appVersion))
-                .setMessage("- Added feedback button\n- Added ads\n\nThank you for 1000 downloads!")
+                .setMessage("- Added Privacy Policy")
 
                 // Specifying a listener allows you to take an action before dismissing the dialog.
                 // The dialog is automatically dismissed when a dialog button is clicked.
