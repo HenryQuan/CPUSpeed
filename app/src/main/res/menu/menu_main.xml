@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item
-        android:id="@+id/menu_ads"
-        android:title="Support CPUSpeed"
-        android:checkable="true"
-        android:checked="true"
-        android:onClick="toggleAds"/>
-
-    <item
-        android:id="@+id/menu_support"
-        android:title="Patreon"
-        android:onClick="gotoPatreon"/>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/menu_feedback"

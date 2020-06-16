@@ -1,25 +1,21 @@
 package com.yihengquan.cpuspeed;
 
-import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.facebook.ads.*;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -40,10 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private int currMaxFreq = 0;
     private int currMinFreq = 0;
 
-    private final String appVersion = "1.0.5";
+    private final String appVersion = "1.0.7";
 
-    // banner
-    private AdView banner;
     private Menu menu;
 
     @Override
@@ -57,17 +51,11 @@ public class MainActivity extends AppCompatActivity {
         m.inflate(R.menu.menu_main, menu);
         this.menu = menu;
 
-        // Set ads state
-        boolean showAds = getAds();
-        MenuItem ads = this.menu.findItem(R.id.menu_ads);
-        ads.setChecked(showAds);
-
         return true;
     }
 
     @Override
     protected void onDestroy() {
-        if (banner != null) banner.destroy();
         super.onDestroy();
     }
 
@@ -205,14 +193,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please contact me for more info", Toast.LENGTH_LONG).show();
             }
         }
-
-        // Setup banner
-        if (getAds()) {
-            banner = new AdView(this, "889645368038871_889649694705105", AdSize.BANNER_HEIGHT_50);
-            banner.loadAd();
-            LinearLayout adBanner = findViewById(R.id.ads_banner);
-            adBanner.addView(banner);
-        }
     }
 
     /**
@@ -222,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
     public void showAbout(MenuItem item) {
         new AlertDialog.Builder(this)
             .setTitle("CPUSpeed")
-            .setMessage("It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info and support me on Patreon.")
+            .setMessage("It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info.")
 
             // Specifying a listener allows you to take an action before dismissing the dialog.
             // The dialog is automatically dismissed when a dialog button is clicked.
@@ -257,67 +237,9 @@ public class MainActivity extends AppCompatActivity {
      * Show or hide ads
      * @param item
      */
-    public void toggleAds(MenuItem item) {
-        MenuItem ads = this.menu.findItem(R.id.menu_ads);
-        boolean newState = !ads.isChecked();
-        ads.setChecked(newState);
-        this.setAds(newState);
+    public void downloadKernelEditor(MenuItem item) {
+        openLink("https://github.com/HenryQuan/CPUSpeed/blob/master/Privacy%20Policy.md");
     }
-
-    /**
-     * Get current state of ads
-     * @return whether show or hide ads
-     */
-    private boolean getAds() {
-        SharedPreferences pref = getSharedPreferences("CPUSpeed", MODE_PRIVATE);
-        boolean ADS = pref.getBoolean("ADS", true);
-        return ADS;
-    }
-
-    /**
-     * Set state for ads
-     * @param state true of false
-     */
-    private void setAds(final Boolean state) {
-        SharedPreferences pref = getSharedPreferences("CPUSpeed", MODE_PRIVATE);
-        final SharedPreferences.Editor editor = pref.edit();
-        if (!state) {
-            final MenuItem ads = this.menu.findItem(R.id.menu_ads);
-            new AlertDialog.Builder(this)
-                .setTitle("CPUSpeed")
-                .setMessage("Do you want to keep supporting CPUSpeed with ads?")
-                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // update state
-                        editor.putBoolean("ADS", true);
-                        editor.apply();
-                        ads.setChecked(true);
-                    }
-                })
-                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // update state
-                        editor.putBoolean("ADS", state);
-                        editor.apply();
-                        ads.setChecked(state);
-                        finish();
-                        startActivity(getIntent());
-                    }
-                })
-                .setCancelable(false)
-                .show();
-        } else {
-            // update state
-            editor.putBoolean("ADS", state);
-            editor.apply();
-
-            finish();
-            startActivity(getIntent());
-        }
-    }
-
 
     /**
      * Email me with feed back
@@ -325,14 +247,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public void emailMe(MenuItem item) {
         this.openLink(String.format("mailto:development.henryquan@gmail.com?subject=[CPUSpeed %s] ", appVersion));
-    }
-
-    /**
-     * Visit my patreon page
-     * @param item
-     */
-    public void gotoPatreon(MenuItem item) {
-        this.openLink("https://www.patreon.com/henryquan");
     }
 
     /**
@@ -359,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         if (first) {
             new AlertDialog.Builder(this)
                 .setTitle("CPUSpeed")
-                .setMessage("Thank you for downloading this app.\n\nPlease note that if you underclock your device, it might freeze or even shutdown in the worst case. If you overclock your device, it might become warm and battery will run out quickly.")
+                .setMessage("Thank you for downloading this app.\n\nPlease note that if you under clock your device, it might freeze or even shutdown in the worst case. If you overclock your device, it might become warm and battery will run out quickly.\n\nThis app might not work on your device. In this case, you can use other apps.")
 
                 // Specifying a listener allows you to take an action before dismissing the dialog.
                 // The dialog is automatically dismissed when a dialog button is clicked.
@@ -385,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
         if (whatsnew) {
             new AlertDialog.Builder(this)
                 .setTitle(String.format("Version %s", appVersion))
-                .setMessage("- Added Privacy Policy")
+                .setMessage("Thank you for 25k downloads. This app was written because other apps weren't working for me and paid.\nNow, I do not have any rooted devices and this app will not be developed anymore unless I need it again. Thank you for all your support and all your suggestions.\n- Updated to androidx\n- Removed ads")
 
                 // Specifying a listener allows you to take an action before dismissing the dialog.
                 // The dialog is automatically dismissed when a dialog button is clicked.
