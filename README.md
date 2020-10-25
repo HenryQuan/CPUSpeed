@@ -1,5 +1,5 @@
 # CPU Speed (Deprecated)
-Set cpu speed easily for rooted android phones.
+Set CPU Speed easily for rooted android phones (may not work on all).
 
 **I changed to Samsung A70 and flushed official rom to OnePLus 5 so I don't have any rooted devices anymore. Therefore, this app is no longer under development.** Back then, I saw an app that costed 1 dollar just to update your cpu speed. That's why I wrote this app because it should be free.
 

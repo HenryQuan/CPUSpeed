@@ -25,8 +25,9 @@ class MainActivity : AppCompatActivity() {
     private val core = Runtime.getRuntime().availableProcessors()
     private var currMaxFreq = 0
     private var currMinFreq = 0
-    private val appVersion: String? = "1.0.7"
+    private val appVersion: String? = "1.0.9"
     private var menu: Menu? = null
+
     override fun onConfigurationChanged(newConfig: Configuration?) {
         super.onConfigurationChanged(newConfig)
     }
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
             val output = getOutputFromShell("su -c cat /sys/devices/system/cpu/cpu*/cpufreq/*m*_freq")
-            if (output != null && !output.isEmpty()) {
+            if (output != null && output.isNotEmpty()) {
                 // Update freq when seek bar changed
                 val maxFreq = findViewById<SeekBar?>(R.id.maxFreq)
                 val minFreq = findViewById<SeekBar?>(R.id.minFreq)
@@ -80,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                     for (i in 0 until core) {
                         // First and third values
                         val maxInfoStr = shell[i * 4]
-                        val maxInfo = maxInfoStr.toInt()
+                        val maxInfo = maxInfoStr?.toInt()
                         val maxCurr = shell[i * 4 + 2].toInt()
                         val minCurr = shell[i * 4 + 3].toInt()
                         if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo
@@ -105,8 +106,8 @@ class MainActivity : AppCompatActivity() {
                     // Set cpuInfo text
                     var infoStr = ""
                     for (key in speedInfo.keys) {
-                        val count: Int = speedInfo[key]
-                        val speed = key.toFloat() / 1000000
+                        val count: Int? = speedInfo[key]
+                        val speed = (key?.toFloat() ?: 0) / 1000000
                         infoStr += String.format("%d x %.2f GHz\n", count, speed)
                     }
                     println(infoStr)
