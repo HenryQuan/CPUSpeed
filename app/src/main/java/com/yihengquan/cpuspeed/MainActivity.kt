@@ -1,7 +1,6 @@
 package com.yihengquan.cpuspeed
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -14,23 +13,32 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import org.junit.runner.RunWith
 import java.io.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    /**
+     * Links
+     */
+    private val policyLink = "https://github.com/HenryQuan/CPUSpeed/blob/master/Privacy%20Policy.md"
+    private val playStoreLink = "https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed"
+    private val githubIssueLink = "https://github.com/HenryQuan/CPUSpeed/issues/new"
+    private val githubRepoLink = "https://github.com/HenryQuan/CPUSpeed"
+
+    /**
+     * Frequency related
+     */
     private var maxFreqInfo = 0
     private var minFreqInfo = 0
     private var freqDiff = 0
-    private val core = Runtime.getRuntime().availableProcessors()
     private var currMaxFreq = 0
     private var currMinFreq = 0
-    private val appVersion: String? = "1.0.9"
-    private var menu: Menu? = null
 
-    override fun onConfigurationChanged(newConfig: Configuration?) {
-        super.onConfigurationChanged(newConfig)
-    }
+    private val numberOfCores = Runtime.getRuntime().availableProcessors()
+
+    private val appVersion = "1.0.9"
+
+    private var menu: Menu? = null
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val m = menuInflater
@@ -39,49 +47,55 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         // Show toolbar
         val toolbar = findViewById<Toolbar?>(R.id.toolbar)
         setSupportActionBar(toolbar)
+
+        // Show dialogs
         if (!showWelcomeDialog()) {
             showWhatsNewDialog()
         }
+
         if (!findBinary("su") && !findBinary("busybox")) {
-            Toast.makeText(this, "Device is not rooted", Toast.LENGTH_LONG).show()
-        } else {
-            // Make sure cpu folders have the right permission
-            try {
-                val p = Runtime.getRuntime().exec("su")
-                val os = DataOutputStream(p.outputStream)
-                os.writeBytes("chmod 755 /sys/devices/system/cpu/cpu*")
-                os.flush()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-            val output = getOutputFromShell("su -c cat /sys/devices/system/cpu/cpu*/cpufreq/*m*_freq")
-            if (output != null && output.isNotEmpty()) {
+            Toast.makeText(this, "Device might not be rooted", Toast.LENGTH_LONG).show()
+        }
+
+        // Make sure cpu folders have the right permission
+        try {
+            val p = Runtime.getRuntime().exec("su")
+            val os = DataOutputStream(p.outputStream)
+            os.writeBytes("chmod 755 /sys/devices/system/cpu/cpu*")
+            os.flush()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Toast.makeText(this, "Failed to update folders' permission", Toast.LENGTH_LONG).show()
+        }
+
+        val output = getOutputFromShell("su -c cat /sys/devices/system/cpu/cpu*/cpufreq/*m*_freq")
+        output?.let {
+            if (it.isNotEmpty()) {
                 // Update freq when seek bar changed
                 val maxFreq = findViewById<SeekBar?>(R.id.maxFreq)
                 val minFreq = findViewById<SeekBar?>(R.id.minFreq)
+                val maxValue = findViewById<TextView?>(R.id.maxFreqValue)
+                val minValue = findViewById<TextView?>(R.id.minFreqValue)
 
                 // Catch errors...
                 try {
-                    val shell: Array<String?> = output.split("\n".toRegex()).toTypedArray()
+                    val shell: Array<String> = it.split("\n".toRegex()).toTypedArray()
                     //System.out.println(output);
                     // Store cpu info
-                    val speedInfo = HashMap<String?, Int?>()
+                    val speedInfo = HashMap<String, Int>()
 
                     // Find max values
-                    for (i in 0 until core) {
+                    for (i in 0 until numberOfCores) {
                         // First and third values
                         val maxInfoStr = shell[i * 4]
-                        val maxInfo = maxInfoStr?.toInt()
+                        val maxInfo = maxInfoStr.toInt()
                         val maxCurr = shell[i * 4 + 2].toInt()
                         val minCurr = shell[i * 4 + 3].toInt()
                         if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo
@@ -98,16 +112,14 @@ class MainActivity : AppCompatActivity() {
                     minFreqInfo = shell[1].toInt()
                     freqDiff = maxFreqInfo - minFreqInfo
                     Toast.makeText(this, String.format(Locale.ENGLISH, "%d MHz - %d MHz", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show()
-                    val minValue = findViewById<TextView?>(R.id.minFreqValue)
                     minValue.text = String.format(Locale.ENGLISH, "%d MHz", currMinFreq)
-                    val maxValue = findViewById<TextView?>(R.id.maxFreqValue)
                     maxValue.text = String.format(Locale.ENGLISH, "%d MHz", currMaxFreq)
 
                     // Set cpuInfo text
                     var infoStr = ""
                     for (key in speedInfo.keys) {
                         val count: Int? = speedInfo[key]
-                        val speed = (key?.toFloat() ?: 0) / 1000000
+                        val speed = key.toFloat() / 1000000
                         infoStr += String.format("%d x %.2f GHz\n", count, speed)
                     }
                     println(infoStr)
@@ -120,8 +132,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                val maxValue = findViewById<TextView?>(R.id.maxFreqValue)
-                val minValue = findViewById<TextView?>(R.id.minFreqValue)
+
                 maxFreq.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
                     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                         currMaxFreq = minFreqInfo + freqDiff * progress / 100
@@ -153,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onStopTrackingTouch(seekBar: SeekBar?) {}
                 })
             } else {
-                Toast.makeText(this, "Please contact me for more info", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Please contact the developer for more info", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -162,13 +173,13 @@ class MainActivity : AppCompatActivity() {
      * Show github page when pressed
      * @param item
      */
-    fun showAbout(item: MenuItem?) {
+    fun showAbout(item: MenuItem) {
         AlertDialog.Builder(this)
                 .setTitle("CPUSpeed")
                 .setMessage("It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info.") // Specifying a listener allows you to take an action before dismissing the dialog.
                 // The dialog is automatically dismissed when a dialog button is clicked.
-                .setPositiveButton("Github") { dialog, which -> openLink("https://github.com/HenryQuan/CPUSpeed") }
-                .setNeutralButton("Privacy Policy") { dialog, which -> openLink("https://github.com/HenryQuan/CPUSpeed/blob/master/Privacy%20Policy.md") }
+                .setPositiveButton("Github") { _, _ -> openLink(githubRepoLink) }
+                .setNeutralButton("Privacy Policy") { _, _ -> openLink(policyLink) }
                 .setCancelable(true)
                 .show()
     }
@@ -177,27 +188,19 @@ class MainActivity : AppCompatActivity() {
      * Share app with a popup
      * @param item
      */
-    fun shareApp(item: MenuItem?) {
+    fun shareApp(item: MenuItem) {
         val share = Intent(Intent.ACTION_SEND)
         share.type = "text/plain"
-        share.putExtra(Intent.EXTRA_TEXT, "https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed")
+        share.putExtra(Intent.EXTRA_TEXT, playStoreLink)
         startActivity(Intent.createChooser(share, "Share CPUSpeed"))
-    }
-
-    /**
-     * Show or hide ads
-     * @param item
-     */
-    fun downloadKernelEditor(item: MenuItem?) {
-        openLink("https://github.com/HenryQuan/CPUSpeed/blob/master/Privacy%20Policy.md")
     }
 
     /**
      * Email me with feed back
      * @param item
      */
-    fun emailMe(item: MenuItem?) {
-        openLink(String.format("mailto:development.henryquan@gmail.com?subject=[CPUSpeed %s] ", appVersion))
+    fun sendFeedback(item: MenuItem) {
+        openLink(githubIssueLink)
     }
 
     /**
@@ -260,11 +263,11 @@ class MainActivity : AppCompatActivity() {
      * Button clicked
      * @param view
      */
-    fun setSpeed(view: View?) {
+    fun setSpeed(view: View) {
         if (maxFreqInfo == 0 || minFreqInfo == 0) {
             Toast.makeText(this, String.format(Locale.ENGLISH, "Error: unknown clock speed", minFreqInfo, maxFreqInfo), Toast.LENGTH_SHORT).show()
         } else {
-            setCPUSpeed(currMaxFreq, currMinFreq, core)
+            setCPUSpeed(currMaxFreq, currMinFreq, numberOfCores)
         }
     }
 
@@ -276,37 +279,25 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setCPUSpeed(maxSpeed: Int, minSpeed: Int, core: Int) {
         // Get a list for commands
-        var maxSpeed = maxSpeed
         val commands = ArrayList<String?>()
-        var i: Int
-        i = 0
-        while (i < core) {
 
-            // Max
+        for (i in 0..core) {
+            // Max scaling
             var path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq", i)
             // Change to 644 for changing value and then change it back (from Kernel Adiutor)
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, maxSpeed, path, path))
 
-            // Min
+            // Min scaling
             path = String.format(Locale.ENGLISH, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_min_freq", i)
             // Change to 644 for changing value and then change it back (from Kernel Adiutor)
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho \"%d\" > %s\nchmod 444 %s", path, minSpeed, path, path))
-            i++
-        }
-        i = 0
-        while (i < core) {
-            val path = "/sys/module/msm_performance/parameters/cpu_max_freq"
+
             // Max
-            maxSpeed = 3000000
-            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, maxSpeed, path, path))
-            i++
-        }
-        i = 0
-        while (i < core) {
-            val path = "/sys/module/msm_performance/parameters/cpu_min_freq"
+            path = "/sys/module/msm_performance/parameters/cpu_max_freq"
+            commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, 3000000, path, path))
             // Min
+            path = "/sys/module/msm_performance/parameters/cpu_min_freq"
             commands.add(String.format(Locale.ENGLISH, "chmod 644 %s\necho '%d:%d' > %s\nchmod 444 %s", path, i, minSpeed, path, path))
-            i++
         }
 
         // System.out.println(commands.toString());
