@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_module/services/ui_channel.dart';
+import 'package:flutter_module/services/simple_channel.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,9 +13,11 @@ class _HomePageState extends State<HomePage> {
     'About',
   ];
 
+  final _simpleChannel = SimpleMethodChannel();
+  final double frequency = 10000000;
+
   double min = 0;
   double max = 0;
-  final double frequency = 10000000;
 
   @override
   Widget build(BuildContext context) {
@@ -105,14 +107,16 @@ class _HomePageState extends State<HomePage> {
   void _onSelectPopupMenu(String value) {
     switch (value) {
       case 'Feedback':
+        _simpleChannel.sendFeedback();
         break;
       case 'Share':
+        _simpleChannel.shareApp();
         break;
       case 'About':
-        _showAboutDialog();
+        _simpleChannel.showAbout();
+        // _showAboutDialog();
         break;
     }
-    UIChannel().showToast("You tapped $value");
   }
 
   void _showAboutDialog() {
