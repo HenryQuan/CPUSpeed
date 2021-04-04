@@ -17,6 +17,25 @@ class CPUSpeed extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
         accentColor: Colors.pinkAccent,
+        sliderTheme: SliderThemeData(
+          thumbColor: Colors.pinkAccent,
+          activeTrackColor: Colors.pinkAccent,
+          inactiveTrackColor: Colors.black12,
+        ),
+        appBarTheme: AppBarTheme(
+          brightness: Brightness.dark,
+        ),
+      ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.green,
+        accentColor: Colors.pinkAccent,
+        sliderTheme: SliderThemeData(
+          thumbColor: Colors.pinkAccent,
+          activeTrackColor: Colors.pinkAccent,
+          inactiveTrackColor: Colors.white,
+          activeTickMarkColor: Colors.pinkAccent,
+        ),
+        brightness: Brightness.dark,
       ),
       home: HomePage(),
     );
