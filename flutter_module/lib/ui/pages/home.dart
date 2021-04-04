@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_module/services/ui_channel.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class _HomePageState extends State<HomePage> {
 
   double min = 0;
   double max = 0;
+  final double frequency = 10000000;
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +24,16 @@ class _HomePageState extends State<HomePage> {
         title: Text('CPUSpeed'),
         actions: [
           PopupMenuButton<String>(
-            onSelected: onSelectPopupMenu,
+            onSelected: _onSelectPopupMenu,
             itemBuilder: (BuildContext context) {
               return options.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
-                  child: Text(choice),
+                  child: Container(
+                    // Make the popup wider to feel more native
+                    width: 140,
+                    child: Text(choice),
+                  ),
                 );
               }).toList(growable: false);
             },
@@ -63,7 +69,7 @@ class _HomePageState extends State<HomePage> {
                         },
                       ),
                     ),
-                    Text('8888888 MHz'),
+                    Text('${(frequency * max).round()} MHz'),
                   ],
                 ),
                 Row(
@@ -80,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                         },
                       ),
                     ),
-                    Text('8888888 MHz'),
+                    Text('${(frequency * min).round()} MHz'),
                   ],
                 ),
                 Padding(
@@ -96,5 +102,40 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void onSelectPopupMenu(String value) {}
+  void _onSelectPopupMenu(String value) {
+    switch (value) {
+      case 'Feedback':
+        break;
+      case 'Share':
+        break;
+      case 'About':
+        _showAboutDialog();
+        break;
+    }
+    UIChannel().showToast("You tapped $value");
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('CPUSpeed'),
+          content: Text(
+            'It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {},
+              child: Text('PRIVACY POLICY'),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: Text('GITHUB'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
