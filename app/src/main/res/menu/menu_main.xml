@@ -4,17 +4,17 @@
 
     <item
         android:id="@+id/menu_feedback"
-        android:title="Feedback"
-        android:onClick="emailMe"/>
+        android:title="@string/menu_feedback"
+        android:onClick="sendFeedback"/>
 
     <item
         android:id="@+id/menu_share"
-        android:title="Share"
+        android:title="@string/menu_share"
         android:onClick="shareApp"/>
 
     <item
         android:id="@+id/menu_about"
-        android:title="About"
+        android:title="@string/menu_about"
         android:onClick="showAbout"/>
 
 </menu>

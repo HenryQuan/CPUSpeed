@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">CPUSpeed</string>
+    <string name="max_cpu_speed">Max</string>
+    <string name="min_cpu_speed">Min</string>
+    <string name="cpu_info_text">...</string>
+    <string name="save_changes">Save changes</string>
+    <string name="menu_feedback">Feedback</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_about">About</string>
 </resources>
