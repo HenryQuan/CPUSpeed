@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
-import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlin.Error
 
@@ -14,11 +13,9 @@ class SimpleMethodChannel(context: Context) : BaseMethodChannel(context) {
     override val name: String = "ui"
     private val channel: MethodChannel by lazy(this::setupChannel)
 
-    private val policyLink = "https://github.com/HenryQuan/CPUSpeed/blob/master/Privacy%20Policy.md"
     private val playStoreLink =
         "https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed"
     private val githubIssueLink = "https://github.com/HenryQuan/CPUSpeed/issues/new"
-    private val githubRepoLink = "https://github.com/HenryQuan/CPUSpeed"
 
     init {
         channel.setMethodCallHandler { call, _ ->
@@ -27,7 +24,7 @@ class SimpleMethodChannel(context: Context) : BaseMethodChannel(context) {
                 "feedback" -> sendFeedback(context)
                 "share" -> shareApp(context)
                 "openUrl" -> openLink(context, call.argument<String>("url")!!)
-                else -> throw Error("Method not found")
+                else -> throw Error("Method not found, ${call.method}")
             }
         }
     }

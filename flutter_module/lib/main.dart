@@ -18,15 +18,15 @@ class CPUSpeed extends StatelessWidget {
     return MaterialApp(
       title: 'CPUSpeed',
       theme: ThemeData(
-        primarySwatch: pink,
-        primaryColor: green,
+        primarySwatch: AppColor.pink,
+        primaryColor: AppColor.green,
         appBarTheme: AppBarTheme(
           brightness: Brightness.dark,
         ),
       ),
       darkTheme: ThemeData(
-        primarySwatch: pink,
-        accentColor: pink,
+        primarySwatch: AppColor.pink,
+        accentColor: AppColor.pink,
         brightness: Brightness.dark,
       ),
       home: HomePage(),

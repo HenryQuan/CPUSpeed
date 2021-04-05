@@ -9,7 +9,7 @@ import java.io.File
 import java.io.InputStreamReader
 
 class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
-    override val name: String = "ui"
+    override val name: String = "cpu"
     private val channel: MethodChannel by lazy(this::setupChannel)
 
     private val places = arrayOf(
@@ -30,16 +30,16 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
             when (call.method) {
                 "setup" -> setup(context)
                 "info" -> getCPUInfo(context) { result.success(it) }
-                else -> throw Error("Method not found")
+                else -> throw Error("Method not found, ${call.method}")
             }
         }
     }
 
-    private fun setCPUSpeed(context: Context, maxSpeed: Int, minSpeed: Int, core: Int) {
+    private fun setCPUSpeed(context: Context, maxSpeed: Int, minSpeed: Int) {
         // Get a list for commands
         val commands = ArrayList<String>()
 
-        for (i in 0..core) {
+        for (i in 0..numberOfCores) {
             // Max scaling
             var path = String.format(
                 "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq",
@@ -122,41 +122,41 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
                 val info = HashMap<String, Any>()
 
                 // Find max values
-                for (i in 0 until numberOfCores) {
-                    // First and third values
-                    val maxInfoStr = shell[i * 4]
-                    val maxInfo = maxInfoStr.toInt()
-                    val maxCurr = shell[i * 4 + 2].toInt()
-                    val minCurr = shell[i * 4 + 3].toInt()
-                    if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo
-                    if (maxCurr > currMaxFreq) currMaxFreq = maxCurr
-                    if (minCurr > currMinFreq) currMinFreq = minCurr
-
-                    // Store max info
-                    var count = speedInfo[maxInfoStr]
-                    if (count == null) count = 0
-                    speedInfo[maxInfoStr] = count + 1
-                }
-
-                // Min and curr min are current, only max values could differ
-                minFreqInfo = shell[1].toInt()
-                freqDiff = maxFreqInfo - minFreqInfo
-                Toast.makeText(
-                    context,
-                    String.format("%d MHz - %d MHz", minFreqInfo, maxFreqInfo),
-                    Toast.LENGTH_SHORT
-                ).show()
-                minValue.text = String.format(Locale.ENGLISH, "%d MHz", currMinFreq)
-                maxValue.text = String.format(Locale.ENGLISH, "%d MHz", currMaxFreq)
-
-                // Set cpuInfo text
-                var infoStr = ""
-                for (key in speedInfo.keys) {
-                    val count: Int? = speedInfo[key]
-                    val speed = key.toFloat() / 1000000
-                    infoStr += String.format("%d x %.2f GHz\n", count, speed)
-                }
-                println(infoStr)
+//                for (i in 0 until numberOfCores) {
+//                    // First and third values
+//                    val maxInfoStr = shell[i * 4]
+//                    val maxInfo = maxInfoStr.toInt()
+//                    val maxCurr = shell[i * 4 + 2].toInt()
+//                    val minCurr = shell[i * 4 + 3].toInt()
+//                    if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo
+//                    if (maxCurr > currMaxFreq) currMaxFreq = maxCurr
+//                    if (minCurr > currMinFreq) currMinFreq = minCurr
+//
+//                    // Store max info
+//                    var count = speedInfo[maxInfoStr]
+//                    if (count == null) count = 0
+//                    speedInfo[maxInfoStr] = count + 1
+//                }
+//
+//                // Min and curr min are current, only max values could differ
+//                minFreqInfo = shell[1].toInt()
+//                freqDiff = maxFreqInfo - minFreqInfo
+//                Toast.makeText(
+//                    context,
+//                    String.format("%d MHz - %d MHz", minFreqInfo, maxFreqInfo),
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//                minValue.text = String.format(Locale.ENGLISH, "%d MHz", currMinFreq)
+//                maxValue.text = String.format(Locale.ENGLISH, "%d MHz", currMaxFreq)
+//
+//                // Set cpuInfo text
+//                var infoStr = ""
+//                for (key in speedInfo.keys) {
+//                    val count: Int? = speedInfo[key]
+//                    val speed = key.toFloat() / 1000000
+//                    infoStr += String.format("%d x %.2f GHz\n", count, speed)
+//                }
+//                println(infoStr)
 
                 callback(info)
             } else {

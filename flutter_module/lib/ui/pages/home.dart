@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_module/core/constants.dart';
 import 'package:flutter_module/services/simple_channel.dart';
 
 class HomePage extends StatefulWidget {
@@ -113,8 +114,7 @@ class _HomePageState extends State<HomePage> {
         _simpleChannel.shareApp();
         break;
       case 'About':
-        _simpleChannel.showAbout();
-        // _showAboutDialog();
+        _showAboutDialog();
         break;
     }
   }
@@ -130,11 +130,11 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {},
+              onPressed: () => _simpleChannel.openUrl(PRIVACY_POLICY_URL),
               child: Text('PRIVACY POLICY'),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () => _simpleChannel.openUrl(GITHUB_REPO_URL),
               child: Text('GITHUB'),
             ),
           ],

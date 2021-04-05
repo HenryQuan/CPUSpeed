@@ -1,6 +1,6 @@
 import 'package:flutter_module/services/base_channel.dart';
 
-/// Use native alert, toast and more UI related components
+/// Handle basic native requests (open a link, show a toast and more)
 class SimpleMethodChannel extends BaseMethodChannel {
   @override
   String name = "ui";
@@ -12,8 +12,8 @@ class SimpleMethodChannel extends BaseMethodChannel {
     );
   }
 
-  void showAbout() {
-    channel.invokeMethod('about');
+  void openUrl(String url) {
+    channel.invokeMethod('openUrl', {'url': url});
   }
 
   void sendFeedback() {
