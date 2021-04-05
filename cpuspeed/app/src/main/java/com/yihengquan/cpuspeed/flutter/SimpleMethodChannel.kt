@@ -21,31 +21,19 @@ class SimpleMethodChannel(context: Context) : BaseMethodChannel(context) {
     private val githubRepoLink = "https://github.com/HenryQuan/CPUSpeed"
 
     init {
-        channel.setMethodCallHandler { call, result ->
+        channel.setMethodCallHandler { call, _ ->
             when (call.method) {
-                "toast" -> toast(context, call)
-                "about" -> showAbout(context)
+                "toast" -> toast(context, call.argument<String>("message")!!)
                 "feedback" -> sendFeedback(context)
                 "share" -> shareApp(context)
+                "openUrl" -> openLink(context, call.argument<String>("url")!!)
                 else -> throw Error("Method not found")
             }
         }
     }
 
-    private fun toast(context: Context, call: MethodCall) {
-        val msg = call.argument<String>("message")
+    private fun toast(context: Context, msg: String) {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun showAbout(context: Context) {
-        AlertDialog.Builder(context)
-            .setTitle("CPUSpeed")
-            .setMessage("It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info.") // Specifying a listener allows you to take an action before dismissing the dialog.
-            // The dialog is automatically dismissed when a dialog button is clicked.
-            .setPositiveButton("Github") { _, _ -> openLink(context, githubRepoLink) }
-            .setNeutralButton("Privacy Policy") { _, _ -> openLink(context, policyLink) }
-            .setCancelable(true)
-            .show()
     }
 
     private fun shareApp(context: Context) {
