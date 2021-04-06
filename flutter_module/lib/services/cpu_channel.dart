@@ -8,4 +8,15 @@ class CPUMethodChannel extends BaseMethodChannel {
   Future<void> setup() async {
     channel.invokeMethod('setup');
   }
+
+  Future<Map<String, Object>?> getCPUInfo() async {
+    return Map.from(await channel.invokeMethod('info'));
+  }
+
+  Future<void> setSpeed(int min, int max) async {
+    channel.invokeMethod('setSpeed', {
+      'max': max,
+      'min': min,
+    });
+  }
 }

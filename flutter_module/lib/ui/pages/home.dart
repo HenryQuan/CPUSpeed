@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_module/core/constants.dart';
+import 'package:flutter_module/services/cpu_channel.dart';
 import 'package:flutter_module/services/simple_channel.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,10 +16,29 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final _simpleChannel = SimpleMethodChannel();
-  final double frequency = 10000000;
+  final _cpuChannel = CPUMethodChannel();
 
   double min = 0;
   double max = 0;
+  int minFreq = 0;
+  int maxFreq = 0;
+  String cpuInfo = "--";
+
+  @override
+  void initState() {
+    super.initState();
+
+    _cpuChannel.setup().then((_) {
+      _cpuChannel.getCPUInfo().then((json) {
+        if (json != null) {
+          print(json);
+          cpuInfo = json['info'] as String;
+          minFreq = json['min'] as int;
+          maxFreq = json['max'] as int;
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +71,7 @@ class _HomePageState extends State<HomePage> {
               alignment: Alignment.bottomCenter,
               child: FloatingActionButton(
                 child: Icon(Icons.save),
-                onPressed: () {},
+                onPressed: _onUpdateSpeed,
               ),
             ),
             Column(
@@ -65,14 +85,10 @@ class _HomePageState extends State<HomePage> {
                     Expanded(
                       child: Slider(
                         value: max,
-                        onChanged: (value) {
-                          setState(() {
-                            max = value;
-                          });
-                        },
+                        onChanged: _onChangeMaxSlider,
                       ),
                     ),
-                    Text('${(frequency * max).round()} MHz'),
+                    Text('${(maxFreq * max).round()} MHz'),
                   ],
                 ),
                 Row(
@@ -82,26 +98,40 @@ class _HomePageState extends State<HomePage> {
                     Expanded(
                       child: Slider(
                         value: min,
-                        onChanged: (value) {
-                          setState(() {
-                            min = value;
-                          });
-                        },
+                        onChanged: _onChangeMinSlider,
                       ),
                     ),
-                    Text('${(frequency * min).round()} MHz'),
+                    Text('${(maxFreq * min).round()} MHz'),
                   ],
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
-                  child: Text('4 x 1.90 GHz'),
+                  child: Text(cpuInfo),
                 ),
-                Text('4 x 2.46 GHz'),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _onChangeMinSlider(double value) {
+    setState(() {
+      min = value;
+    });
+  }
+
+  void _onChangeMaxSlider(double value) {
+    setState(() {
+      max = value;
+    });
+  }
+
+  void _onUpdateSpeed() {
+    _cpuChannel.setSpeed(
+        (min * maxFreq).toInt(),
+        (max * maxFreq).toInt(),
     );
   }
 
