@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   double max = 0;
   int minFreq = 0;
   int maxFreq = 0;
-  String cpuInfo = "--";
+  String cpuInfo = "";
 
   @override
   void initState() {
@@ -31,10 +31,11 @@ class _HomePageState extends State<HomePage> {
     _cpuChannel.setup().then((_) {
       _cpuChannel.getCPUInfo().then((json) {
         if (json != null) {
-          print(json);
-          cpuInfo = json['info'] as String;
-          minFreq = json['min'] as int;
-          maxFreq = json['max'] as int;
+          setState(() {
+            cpuInfo = json['info'] as String;
+            minFreq = json['min'] as int;
+            maxFreq = json['max'] as int;
+          });
         }
       });
     });
@@ -130,8 +131,8 @@ class _HomePageState extends State<HomePage> {
 
   void _onUpdateSpeed() {
     _cpuChannel.setSpeed(
-        (min * maxFreq).toInt(),
-        (max * maxFreq).toInt(),
+      (min * maxFreq).toInt(),
+      (max * maxFreq).toInt(),
     );
   }
 
@@ -159,6 +160,19 @@ class _HomePageState extends State<HomePage> {
             'It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info.',
           ),
           actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => LicensePage(
+                      applicationVersion: APP_VERSION,
+                    ),
+                  ),
+                );
+              },
+              child: Text('LICENSES'),
+            ),
             TextButton(
               onPressed: () => _simpleChannel.openUrl(PRIVACY_POLICY_URL),
               child: Text('PRIVACY POLICY'),

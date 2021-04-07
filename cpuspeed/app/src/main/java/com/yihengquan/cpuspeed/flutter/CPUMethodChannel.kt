@@ -131,11 +131,11 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
         for (core in 0..numberOfCores) {
             commands.add(getScalingCommand(core, maxSpeed, max = true))
             commands.add(getScalingCommand(core, minSpeed, max = false))
-            commands.add(getPerformanceParameterCommand(core, maxSpeed, max = true))
-            commands.add(getPerformanceParameterCommand(core, minSpeed, max = false))
         }
 
-        System.out.println(commands.toString());
+        commands.add(getPerformanceParameterCommand(maxSpeed, max = true))
+        commands.add(getPerformanceParameterCommand(minSpeed, max = false))
+
         runWithSU(
             context,
             commands.toTypedArray(),
@@ -162,12 +162,16 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
     }
 
     /// For example, "/sys/module/msm_performance/parameters/cpu_min_freq"
-    private fun getPerformanceParameterCommand(core: Int, speed: Int, max: Boolean): String {
+    private fun getPerformanceParameterCommand(speed: Int, max: Boolean): String {
         val path = if (max) maxPath else minPath
+        var command = ""
+        for (core in 0..numberOfCores) {
+            command += "$core:$speed "
+        }
 
         return arrayOf(
             "chmod 644 $path",
-            "echo '$core:$speed' > $path",
+            "echo '$command' > $path",
             "chmod 444 $path",
         ).joinToString(separator = "\n")
     }
@@ -202,7 +206,7 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
         val terminal = DataOutputStream(su.outputStream)
         try {
             for (command in commands) {
-                terminal.writeBytes(command)
+                terminal.writeBytes(command.trimIndent())
                 terminal.flush()
             }
 
