@@ -128,7 +128,7 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
         // Get a list for commands
         val commands = ArrayList<String>()
 
-        for (core in 0..numberOfCores) {
+        for (core in 0 until numberOfCores) {
             commands.add(getScalingCommand(core, maxSpeed, max = true))
             commands.add(getScalingCommand(core, minSpeed, max = false))
         }
@@ -158,6 +158,7 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
             "chmod 644 $path",
             "echo \"$speed\" > $path",
             "chmod 444 $path",
+            ""
         ).joinToString(separator = "\n")
     }
 
@@ -165,15 +166,16 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
     private fun getPerformanceParameterCommand(speed: Int, max: Boolean): String {
         val path = if (max) maxPath else minPath
         var command = ""
-        for (core in 0..numberOfCores) {
-            command += "$core:$speed "
+        for (core in 0 until numberOfCores) {
+            command += arrayOf(
+                "chmod 644 $path",
+                "echo '$core:$speed' > $path",
+                "chmod 444 $path",
+                ""
+            ).joinToString(separator = "\n")
         }
 
-        return arrayOf(
-            "chmod 644 $path",
-            "echo '$command' > $path",
-            "chmod 444 $path",
-        ).joinToString(separator = "\n")
+        return command
     }
     // endregion
 
@@ -206,9 +208,10 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
         val terminal = DataOutputStream(su.outputStream)
         try {
             for (command in commands) {
-                terminal.writeBytes(command.trimIndent())
+                terminal.writeBytes(command)
                 terminal.flush()
             }
+            terminal.close()
 
             if (showSuccessMessage) {
                 Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
