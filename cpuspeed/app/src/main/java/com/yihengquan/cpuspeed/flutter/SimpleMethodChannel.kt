@@ -1,13 +1,14 @@
 package com.yihengquan.cpuspeed.flutter
 
-import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat.startActivity
 import io.flutter.plugin.common.MethodChannel
-import kotlin.Error
+
 
 class SimpleMethodChannel(context: Context) : BaseMethodChannel(context) {
     override val name: String = "ui"
@@ -15,7 +16,7 @@ class SimpleMethodChannel(context: Context) : BaseMethodChannel(context) {
 
     private val playStoreLink =
         "https://play.google.com/store/apps/details?id=com.yihengquan.cpuspeed"
-    private val githubIssueLink = "https://github.com/HenryQuan/CPUSpeed/issues/new"
+    private val githubIssueLink = "https://github.com/HenryQuan/CPUSpeed/issues"
 
     init {
         channel.setMethodCallHandler { call, _ ->
@@ -45,11 +46,8 @@ class SimpleMethodChannel(context: Context) : BaseMethodChannel(context) {
     }
 
     private fun openLink(context: Context, url: String) {
-        try {
-            val browser = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(context, browser, null)
-        } catch (e: Exception) {
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
-        }
+        val builder = CustomTabsIntent.Builder()
+        val customTabsIntent = builder.build()
+        customTabsIntent.launchUrl(context, Uri.parse(url))
     }
 }
