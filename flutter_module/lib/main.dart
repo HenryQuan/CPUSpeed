@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_module/core/color.dart';
 import 'package:flutter_module/ui/pages/home.dart';
@@ -7,6 +8,21 @@ import 'package:flutter_module/ui/pages/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    print(details);
+    // Only show it in debug mode
+    if (kDebugMode) {
+      runApp(
+        SingleChildScrollView(
+          child: ErrorWidget(details),
+        ),
+      );
+    } else {
+      // Show a better message for release mode
+    }
+  };
+
   runApp(CPUSpeed());
 }
 

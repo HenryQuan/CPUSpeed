@@ -146,9 +146,9 @@ class _HomePageState extends State<HomePage> {
 
   double _calcCurrPercent(bool max) {
     if (max) {
-      return currMaxFreq / (maxFreq - minFreq);
+      return currMaxFreq / maxFreq;
     } else {
-      return currMinFreq / (maxFreq - minFreq);
+      return currMinFreq / maxFreq;
     }
   }
 
