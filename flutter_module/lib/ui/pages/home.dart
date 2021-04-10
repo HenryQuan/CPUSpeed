@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_module/core/app_settings.dart';
 import 'package:flutter_module/core/color.dart';
 import 'package:flutter_module/core/constants.dart';
 import 'package:flutter_module/services/cpu_channel.dart';
@@ -33,7 +34,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadCPUInfo();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      await _showDialogIfNeeded();
+      _loadCPUInfo();
+    });
   }
 
   @override
@@ -152,6 +156,47 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _showDialogIfNeeded() async {
+    final settings = AppSetting.instance;
+    if (settings.isFirstLaunch) {
+      // Show app introduction if not yet
+      settings.isFirstLaunch = false;
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('CPUSpeed'),
+            content: Text(APP_INTRODUCTION),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    } else if (settings.shouldShowWhatsNew) {
+      // Show what's new if haven't
+      settings.shouldShowWhatsNew = false;
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Version $APP_VERSION'),
+            content: Text(WHATS_NEW),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   void _loadCPUInfo() async {
     await _cpuChannel.setup();
     final json = await _cpuChannel.getCPUInfo();
@@ -200,9 +245,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context) {
         return AlertDialog(
           title: Text('CPUSpeed'),
-          content: Text(
-            'It aims to help you set CPUSpeed easily for rooted android devices. Please visit my Github repository for more info.',
-          ),
+          content: Text(APP_ABOUT),
           actions: [
             TextButton(
               onPressed: () {

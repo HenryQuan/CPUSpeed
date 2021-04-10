@@ -15,7 +15,7 @@ description: A Flutter module for CPUSpeed
 # This version is used _only_ for the Runner app, which is used if you just do
 # a `flutter run` or a `flutter make-host-app-editable`. It has no impact
 # on any other native host app that you embed your Flutter project into.
-version: 1.0.0+1
+version: 1.0.9+1
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -24,7 +24,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # firebase
   firebase_analytics: ^7.1.1
+  # preference
+  shared_preferences: ^2.0.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
