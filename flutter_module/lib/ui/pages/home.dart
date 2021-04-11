@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_module/core/app_settings.dart';
-import 'package:flutter_module/core/color.dart';
 import 'package:flutter_module/core/constants.dart';
+import 'package:flutter_module/models/cpu_info.dart';
 import 'package:flutter_module/services/cpu_channel.dart';
 import 'package:flutter_module/services/simple_channel.dart';
+import 'package:flutter_module/ui/widgets/slider_row.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -72,31 +73,17 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Max'),
-                      Expanded(
-                        child: Slider(
-                          value: maxPercent,
-                          onChanged: _onChangeMaxSlider,
-                        ),
-                      ),
-                      Text('$currMaxFreq KHz'),
-                    ],
+                  SliderRow(
+                    title: 'Max',
+                    freq: currMaxFreq,
+                    percent: maxPercent,
+                    onChange: _onChangeMaxSlider,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Min'),
-                      Expanded(
-                        child: Slider(
-                          value: minPercent,
-                          onChanged: _onChangeMinSlider,
-                        ),
-                      ),
-                      Text('$currMinFreq KHz'),
-                    ],
+                  SliderRow(
+                    title: 'Min',
+                    freq: currMinFreq,
+                    percent: minPercent,
+                    onChange: _onChangeMinSlider,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
@@ -148,14 +135,6 @@ class _HomePageState extends State<HomePage> {
     return offset + minFreq;
   }
 
-  double _calcCurrPercent(bool max) {
-    if (max) {
-      return currMaxFreq / maxFreq;
-    } else {
-      return currMinFreq / maxFreq;
-    }
-  }
-
   Future<void> _showDialogIfNeeded() async {
     final settings = AppSetting.instance;
     if (settings.isFirstLaunch) {
@@ -203,16 +182,14 @@ class _HomePageState extends State<HomePage> {
     if (json != null) {
       setState(() {
         canChange = true;
-        cpuInfo = json['info'] as String;
-
-        maxFreq = json['max'] as int;
-        minFreq = json['min'] as int;
-
-        currMaxFreq = json['max_curr'] as int;
-        currMinFreq = json['min_curr'] as int;
-
-        maxPercent = _calcCurrPercent(true);
-        minPercent = _calcCurrPercent(false);
+        final info = CPUInfo(json);
+        cpuInfo = info.cpuInfo;
+        maxFreq = info.maxFrequency;
+        minFreq = info.minFrequency;
+        currMaxFreq = info.currMaxFrequency;
+        currMinFreq = info.currMinFrequency;
+        maxPercent = info.calcCurrentPercent(true);
+        minPercent = info.calcCurrentPercent(false);
       });
     } else {
       setState(() {
