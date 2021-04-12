@@ -15,37 +15,26 @@ class HomePresenter extends ChangeNotifier {
   final _simpleChannel = SimpleMethodChannel();
   final _cpuChannel = CPUMethodChannel();
 
-  double minPercent = 0;
-  double maxPercent = 0;
-  int minFreq = 0;
-  int maxFreq = 0;
-  int currMinFreq = 0;
-  int currMaxFreq = 0;
+  late CPUInfo _info;
+  double get minPercent => _info.minPercentage;
+  double get maxPercent => _info.maxPercentage;
+  int get minFreq => _info.minFrequency;
+  int get maxFreq => _info.maxFrequency;
+  int get currMinFreq => _info.currMinFrequency;
+  int get currMaxFreq => _info.currMaxFrequency;
 
   // If min and max freq are unknown, the user shouldn't change sliders at all
-  bool canChange = false;
-  String cpuInfo = "Unknown";
+  bool get canChange => _info.hasData;
+  String get cpuInfo => _info.cpuInfo;
 
   final BuildContext _context;
-
   HomePresenter(this._context);
 
   // region CPU
   void loadCPUInfo() async {
     await _cpuChannel.setup();
     final json = await _cpuChannel.getCPUInfo();
-    if (json != null) {
-      canChange = true;
-      final info = CPUInfo(json);
-      cpuInfo = info.cpuInfo;
-      maxFreq = info.maxFrequency;
-      minFreq = info.minFrequency;
-      currMaxFreq = info.currMaxFrequency;
-      currMinFreq = info.currMinFrequency;
-      maxPercent = info.calcCurrentPercent(true);
-      minPercent = info.calcCurrentPercent(false);
-    }
-
+    _info = CPUInfo(json);
     notifyListeners();
   }
 
@@ -55,35 +44,18 @@ class HomePresenter extends ChangeNotifier {
   // endregion
 
   // region Slider
-  void onChangeMinSlider(double value) {
-    if (canChange) {
-      // Update frequency and make sure max frequency is always more than min
-      currMinFreq = _calcCurrFreq(value);
-      if (currMinFreq > currMaxFreq) {
-        currMaxFreq = currMinFreq;
-        maxPercent = minPercent;
-      }
-      minPercent = value;
-      notifyListeners();
-    }
-  }
-
   void onChangeMaxSlider(double value) {
     if (canChange) {
-      // Make sure min if always less than max
-      currMaxFreq = _calcCurrFreq(value);
-      if (currMaxFreq < currMinFreq) {
-        currMinFreq = currMaxFreq;
-        minPercent = maxPercent;
-      }
-      maxPercent = value;
+      _info.onChangeSlider(value, max: true);
       notifyListeners();
     }
   }
 
-  int _calcCurrFreq(double percent) {
-    final offset = ((maxFreq - minFreq) * percent).toInt();
-    return offset + minFreq;
+  void onChangeMinSlider(double value) {
+    if (canChange) {
+      _info.onChangeSlider(value, max: false);
+      notifyListeners();
+    }
   }
   // endregion
 
