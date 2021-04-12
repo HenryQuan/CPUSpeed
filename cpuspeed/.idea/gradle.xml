@@ -15,7 +15,7 @@
             <option value="$PROJECT_DIR$/../flutter_module" />
             <option value="$PROJECT_DIR$/../flutter_module/.android/Flutter" />
             <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_analytics-7.1.1/android" />
-            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.0.2/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.0.3/android" />
             <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-2.0.5/android" />
           </set>
         </option>

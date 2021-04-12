@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_module/core/app_settings.dart';
+import 'package:flutter_module/core/constants.dart';
+import 'package:flutter_module/models/cpu_info.dart';
 import 'package:flutter_module/services/cpu_channel.dart';
 import 'package:flutter_module/services/simple_channel.dart';
 
-class HomeController extends ChangeNotifier {
+class HomePresenter extends ChangeNotifier {
   final options = [
     'Feedback',
     'Share',
@@ -21,35 +24,34 @@ class HomeController extends ChangeNotifier {
 
   // If min and max freq are unknown, the user shouldn't change sliders at all
   bool canChange = false;
-  String cpuInfo = "";
+  String cpuInfo = "Unknown";
+
+  final BuildContext _context;
+
+  HomePresenter(this._context);
 
   // region CPU
-  void _loadCPUInfo() async {
+  void loadCPUInfo() async {
     await _cpuChannel.setup();
     final json = await _cpuChannel.getCPUInfo();
     if (json != null) {
-      setState(() {
-        canChange = true;
-        final info = CPUInfo(json);
-        cpuInfo = info.cpuInfo;
-        maxFreq = info.maxFrequency;
-        minFreq = info.minFrequency;
-        currMaxFreq = info.currMaxFrequency;
-        currMinFreq = info.currMinFrequency;
-        maxPercent = info.calcCurrentPercent(true);
-        minPercent = info.calcCurrentPercent(false);
-      });
-    } else {
-      setState(() {
-        cpuInfo = "Unknown";
-      });
+      canChange = true;
+      final info = CPUInfo(json);
+      cpuInfo = info.cpuInfo;
+      maxFreq = info.maxFrequency;
+      minFreq = info.minFrequency;
+      currMaxFreq = info.currMaxFrequency;
+      currMinFreq = info.currMinFrequency;
+      maxPercent = info.calcCurrentPercent(true);
+      minPercent = info.calcCurrentPercent(false);
     }
+
+    notifyListeners();
   }
 
-  void _onUpdateSpeed() {
+  void onUpdateSpeed() {
     _cpuChannel.setSpeed(currMinFreq, currMaxFreq);
   }
-
   // endregion
 
   // region Slider
@@ -61,9 +63,8 @@ class HomeController extends ChangeNotifier {
         currMaxFreq = currMinFreq;
         maxPercent = minPercent;
       }
-      setState(() {
-        minPercent = value;
-      });
+      minPercent = value;
+      notifyListeners();
     }
   }
 
@@ -75,9 +76,8 @@ class HomeController extends ChangeNotifier {
         currMinFreq = currMaxFreq;
         minPercent = maxPercent;
       }
-      setState(() {
-        maxPercent = value;
-      });
+      maxPercent = value;
+      notifyListeners();
     }
   }
 
@@ -85,11 +85,10 @@ class HomeController extends ChangeNotifier {
     final offset = ((maxFreq - minFreq) * percent).toInt();
     return offset + minFreq;
   }
-
   // endregion
 
   // region Dialog & Menu
-  void _onSelectPopupMenu(String value) {
+  void onSelectPopupMenu(String value) {
     switch (value) {
       case 'Feedback':
         _simpleChannel.sendFeedback();
@@ -103,13 +102,13 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  Future<void> _showDialogIfNeeded() async {
+  Future<void> showDialogIfNeeded() async {
     final settings = AppSetting.instance;
     if (settings.isFirstLaunch) {
       // Show app introduction if not yet
       settings.isFirstLaunch = false;
       showDialog(
-        context: context,
+        context: _context,
         builder: (context) {
           return AlertDialog(
             title: Text('CPUSpeed'),
@@ -127,7 +126,7 @@ class HomeController extends ChangeNotifier {
       // Show what's new if haven't
       settings.shouldShowWhatsNew = false;
       showDialog(
-        context: context,
+        context: _context,
         builder: (context) {
           return AlertDialog(
             title: Text('Version $APP_VERSION'),
@@ -146,7 +145,7 @@ class HomeController extends ChangeNotifier {
 
   void _showAboutDialog() {
     showDialog(
-      context: context,
+      context: _context,
       builder: (context) {
         return AlertDialog(
           title: Text('CPUSpeed'),
@@ -179,5 +178,5 @@ class HomeController extends ChangeNotifier {
       },
     );
   }
-// endregion
+  // endregion
 }

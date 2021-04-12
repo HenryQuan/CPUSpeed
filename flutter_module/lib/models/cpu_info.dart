@@ -21,7 +21,7 @@ class CPUInfo {
     currMaxFrequency = (json?['max_curr'] as int?) ?? 0;
     currMinFrequency = (json?['min_curr'] as int?) ?? 0;
 
-    // Make sure it is not 0
+    // NOTE: Make sure it is not 0 to prevent zero division
     _diffFrequency = max(maxFrequency - minFrequency, 1);
   }
 
