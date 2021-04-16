@@ -140,7 +140,6 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
             context,
             commands.toTypedArray(),
             true,
-            "Something went wrong"
         )
     }
 
@@ -202,11 +201,11 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
         context: Context,
         commands: Array<String>,
         showSuccessMessage: Boolean = false,
-        errorMessage: String = "Failed to run commands"
+        errorMessage: String? = null,
     ) {
-        val su = runtime.exec("su")
-        val terminal = DataOutputStream(su.outputStream)
         try {
+            val su = runtime.exec("su")
+            val terminal = DataOutputStream(su.outputStream)
             for (command in commands) {
                 terminal.writeBytes(command)
                 terminal.flush()
@@ -220,7 +219,7 @@ class CPUMethodChannel(context: Context) : BaseMethodChannel(context) {
             e.printStackTrace()
             Toast.makeText(
                 context,
-                errorMessage,
+                errorMessage ?: e.localizedMessage,
                 Toast.LENGTH_SHORT
             ).show()
         }
