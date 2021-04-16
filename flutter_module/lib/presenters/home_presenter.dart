@@ -15,7 +15,8 @@ class HomePresenter extends ChangeNotifier {
   final _simpleChannel = SimpleMethodChannel();
   final _cpuChannel = CPUMethodChannel();
 
-  late CPUInfo _info;
+  // Set to the empty state first
+  CPUInfo _info = CPUInfo(null);
   double get minPercent => _info.minPercentage;
   double get maxPercent => _info.maxPercentage;
   int get minFreq => _info.minFrequency;
