@@ -1,2 +1,4 @@
 # firebase config
 **/app/google-services.json
+**/*.aab
+**/*.apk
