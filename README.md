@@ -8,7 +8,7 @@ CPUSpeed is a simple, lightweight app that allows you to control your Android de
 The app has been completely rewritten from the ground up using modern Android development practices:
 
 ### Technology Stack
-- **Language**: Kotlin 2.0.21
+- **Language**: Kotlin 2.3.0
 - **UI Framework**: Jetpack Compose with Material 3
 - **Architecture**: MVVM (Model-View-ViewModel)
 - **Build System**: Gradle 8.9 with Kotlin DSL (.kts)
@@ -17,7 +17,8 @@ The app has been completely rewritten from the ground up using modern Android de
 
 ### Modern Architecture
 ```
-├── CPUManager.kt       - Handles all CPU operations with proper error handling
+├── RootManager.kt      - Enhanced root command execution with proper error handling
+├── CPUManager.kt       - CPU operations with governor support preparation
 ├── CPUViewModel.kt     - MVVM ViewModel with StateFlow and Coroutines
 └── MainActivity.kt     - Pure Jetpack Compose UI with Material 3 design
 ```
@@ -25,10 +26,28 @@ The app has been completely rewritten from the ground up using modern Android de
 ### Key Features
 - ✅ **Modern UI**: Built with Jetpack Compose and Material 3 design system
 - ✅ **Reactive**: Uses Kotlin Flows for reactive state management
+- ✅ **Enhanced Root Implementation**: Robust root command execution with proper error handling
 - ✅ **Error Handling**: Comprehensive device compatibility checks
 - ✅ **Root Detection**: Automatic detection with clear error messages
 - ✅ **Safe**: Warning dialogs to prevent accidental device damage
 - ✅ **Lightweight**: Pure Kotlin implementation, no Flutter overhead
+- ✅ **Extensible**: Prepared for future power governor and power management features
+
+### Root Implementation
+The app features an enhanced root implementation through `RootManager`:
+- Robust command execution with proper exit code checking
+- Support for single commands and command batches
+- File read/write operations with root privileges
+- Enhanced logging and error handling
+- Support for multiple root binaries (su, busybox, magisk)
+
+### Future-Ready
+The codebase is structured to support upcoming features:
+- CPU governor control (interactive, performance, powersave, etc.)
+- Power management and thermal control
+- Per-core frequency management
+- CPU frequency profiles (Battery Saver, Balanced, Performance)
+- Real-time monitoring and statistics
 
 ### Build Configuration
 The project uses state-of-the-art Gradle configuration:

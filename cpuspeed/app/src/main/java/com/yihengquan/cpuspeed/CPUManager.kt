@@ -1,26 +1,31 @@
 package com.yihengquan.cpuspeed
 
 import android.util.Log
-import java.io.*
 
 /**
- * Manager class for CPU frequency operations
+ * Manager class for CPU frequency and power operations
+ * Prepared for future governor and power management features
  */
-class CPUManager {
+class CPUManager(private val rootManager: RootManager = RootManager()) {
     private val numberOfCores = Runtime.getRuntime().availableProcessors()
-    
-    private val places = arrayOf(
-        "/sbin/", "/system/bin/", "/system/xbin/", "/data/local/xbin/",
-        "/data/local/bin/", "/system/sd/xbin/",
-        "/system/bin/failsafe/", "/data/local/"
-    )
-    
-    private val binaries = arrayOf("su", "busybox")
     
     companion object {
         private const val TAG = "CPUManager"
-        private const val maxPath = "/sys/module/msm_performance/parameters/cpu_max_freq"
-        private const val minPath = "/sys/module/msm_performance/parameters/cpu_min_freq"
+        
+        // CPU frequency paths
+        private const val CPU_BASE_PATH = "/sys/devices/system/cpu"
+        private const val SCALING_MAX_FREQ = "cpufreq/scaling_max_freq"
+        private const val SCALING_MIN_FREQ = "cpufreq/scaling_min_freq"
+        private const val SCALING_GOVERNOR = "cpufreq/scaling_governor"
+        private const val SCALING_AVAILABLE_GOVERNORS = "cpufreq/scaling_available_governors"
+        private const val CPUINFO_MAX_FREQ = "cpufreq/cpuinfo_max_freq"
+        private const val CPUINFO_MIN_FREQ = "cpufreq/cpuinfo_min_freq"
+        private const val CPUINFO_CUR_FREQ = "cpufreq/cpuinfo_cur_freq"
+        
+        // Performance parameters (Qualcomm-specific)
+        private const val MSM_PERFORMANCE_PATH = "/sys/module/msm_performance/parameters"
+        private const val MSM_MAX_FREQ = "$MSM_PERFORMANCE_PATH/cpu_max_freq"
+        private const val MSM_MIN_FREQ = "$MSM_PERFORMANCE_PATH/cpu_min_freq"
     }
     
     data class CPUInfo(
@@ -29,6 +34,8 @@ class CPUManager {
         val currMaxFreq: Int,
         val currMinFreq: Int,
         val speedInfo: Map<String, Int>,
+        val currentGovernor: String? = null,
+        val availableGovernors: List<String>? = null,
         val isSupported: Boolean = true,
         val errorMessage: String? = null
     )
@@ -37,21 +44,20 @@ class CPUManager {
      * Check if device is rooted
      */
     fun isDeviceRooted(): Boolean {
-        for (binary in binaries) {
-            if (findBinary(binary)) return true
-        }
-        return false
+        return rootManager.isRootAvailable()
     }
     
     /**
-     * Get CPU information
+     * Get comprehensive CPU information
      */
     fun getCPUInfo(): CPUInfo {
         try {
-            // Set CPU folder permission first
-            setCPUFolderPermission()
+            // Set CPU folder permissions first
+            setCPUFolderPermissions()
             
-            val output = getOutputFromShell("su -c cat /sys/devices/system/cpu/cpu*/cpufreq/*m*_freq")
+            val output = rootManager.executeCommand(
+                "cat $CPU_BASE_PATH/cpu*/cpufreq/*m*_freq"
+            ).getOrNull()
             
             if (output.isNullOrEmpty()) {
                 return CPUInfo(
@@ -65,16 +71,16 @@ class CPUManager {
                 )
             }
             
-            val shell = output.split("\n".toRegex()).toTypedArray()
+            val lines = output.split("\n").filter { it.isNotBlank() }
             val speedInfo = mutableMapOf<String, Int>()
             
             var maxFreqInfo = 0
             var currMaxFreq = 0
             var currMinFreq = 0
             
-            // Validate output format
+            // Validate output format (expecting 4 lines per core: max_freq, min_freq, scaling_max_freq, scaling_min_freq)
             val expectedLines = numberOfCores * 4
-            if (shell.size < expectedLines) {
+            if (lines.size < expectedLines) {
                 return CPUInfo(
                     maxFreqInfo = 0,
                     minFreqInfo = 0,
@@ -82,23 +88,23 @@ class CPUManager {
                     currMinFreq = 0,
                     speedInfo = emptyMap(),
                     isSupported = false,
-                    errorMessage = "Unexpected CPU frequency data format. This device may not be supported."
+                    errorMessage = "Unexpected CPU frequency data format. Expected $expectedLines lines, got ${lines.size}. This device may not be supported."
                 )
             }
             
-            // Find max values
+            // Parse CPU frequency info
             for (i in 0 until numberOfCores) {
                 try {
-                    val maxInfoStr = shell[i * 4]
+                    val maxInfoStr = lines[i * 4]
                     val maxInfo = maxInfoStr.toInt()
-                    val maxCurr = shell[i * 4 + 2].toInt()
-                    val minCurr = shell[i * 4 + 3].toInt()
+                    val maxCurr = lines[i * 4 + 2].toInt()
+                    val minCurr = lines[i * 4 + 3].toInt()
                     
                     if (maxInfo > maxFreqInfo) maxFreqInfo = maxInfo
                     if (maxCurr > currMaxFreq) currMaxFreq = maxCurr
                     if (minCurr > currMinFreq) currMinFreq = minCurr
                     
-                    // Store max info
+                    // Store frequency distribution
                     val count = speedInfo[maxInfoStr] ?: 0
                     speedInfo[maxInfoStr] = count + 1
                 } catch (e: Exception) {
@@ -106,14 +112,20 @@ class CPUManager {
                 }
             }
             
-            val minFreqInfo = shell[1].toInt()
+            val minFreqInfo = lines[1].toInt()
+            
+            // Get governor information (for future use)
+            val currentGovernor = getCurrentGovernor()
+            val availableGovernors = getAvailableGovernors()
             
             return CPUInfo(
                 maxFreqInfo = maxFreqInfo,
                 minFreqInfo = minFreqInfo,
                 currMaxFreq = currMaxFreq,
                 currMinFreq = currMinFreq,
-                speedInfo = speedInfo
+                speedInfo = speedInfo,
+                currentGovernor = currentGovernor,
+                availableGovernors = availableGovernors
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error getting CPU info", e)
@@ -130,95 +142,102 @@ class CPUManager {
     }
     
     /**
-     * Set CPU frequency
+     * Set CPU frequency limits
      */
     fun setCPUSpeed(maxSpeed: Int, minSpeed: Int): Result<Unit> {
         return try {
             val commands = mutableListOf<String>()
             
+            // Generate commands for each core
             for (core in 0 until numberOfCores) {
-                commands.add(getScalingCommand(core, maxSpeed, max = true))
-                commands.add(getScalingCommand(core, minSpeed, max = false))
+                commands.addAll(getScalingCommands(core, maxSpeed, minSpeed))
             }
             
-            commands.add(getPerformanceParameterCommand(maxSpeed, max = true))
-            commands.add(getPerformanceParameterCommand(minSpeed, max = false))
+            // Add performance parameter commands (Qualcomm-specific)
+            if (rootManager.fileExists(MSM_MAX_FREQ)) {
+                commands.addAll(getPerformanceParameterCommands(maxSpeed, minSpeed))
+            }
             
-            runWithSU(commands.toTypedArray())
-            Result.success(Unit)
+            rootManager.executeCommands(commands)
         } catch (e: Exception) {
             Log.e(TAG, "Error setting CPU speed", e)
             Result.failure(e)
         }
     }
     
-    private fun getScalingCommand(core: Int, speed: Int, max: Boolean): String {
-        val path = "/sys/devices/system/cpu/cpu$core/cpufreq/scaling_${if (max) "max" else "min"}_freq"
-        return """
-            chmod 644 $path
-            echo "$speed" > $path
-            chmod 444 $path
-            
-        """.trimIndent()
+    /**
+     * Get current CPU governor (prepared for future governor control)
+     */
+    private fun getCurrentGovernor(): String? {
+        return rootManager.readFile("$CPU_BASE_PATH/cpu0/$SCALING_GOVERNOR")
+            .getOrNull()?.trim()
     }
     
-    private fun getPerformanceParameterCommand(speed: Int, max: Boolean): String {
-        val path = if (max) maxPath else minPath
-        var command = ""
+    /**
+     * Get available CPU governors (prepared for future governor control)
+     */
+    private fun getAvailableGovernors(): List<String>? {
+        return rootManager.readFile("$CPU_BASE_PATH/cpu0/$SCALING_AVAILABLE_GOVERNORS")
+            .getOrNull()?.trim()?.split("\\s+".toRegex())
+    }
+    
+    /**
+     * Set CPU governor (prepared for future implementation)
+     */
+    @Suppress("unused")
+    fun setCPUGovernor(governor: String): Result<Unit> {
+        val commands = mutableListOf<String>()
         for (core in 0 until numberOfCores) {
-            command += """
-                chmod 644 $path
-                echo '$core:$speed' > $path
-                chmod 444 $path
-                
-            """.trimIndent()
+            val path = "$CPU_BASE_PATH/cpu$core/$SCALING_GOVERNOR"
+            commands.add("chmod 644 $path")
+            commands.add("echo '$governor' > $path")
+            commands.add("chmod 444 $path")
         }
-        return command
+        return rootManager.executeCommands(commands)
     }
     
-    private fun setCPUFolderPermission() {
+    private fun getScalingCommands(core: Int, maxSpeed: Int, minSpeed: Int): List<String> {
+        val commands = mutableListOf<String>()
+        val basePath = "$CPU_BASE_PATH/cpu$core"
+        
+        // Max frequency
+        val maxPath = "$basePath/$SCALING_MAX_FREQ"
+        commands.add("chmod 644 $maxPath")
+        commands.add("echo '$maxSpeed' > $maxPath")
+        commands.add("chmod 444 $maxPath")
+        
+        // Min frequency
+        val minPath = "$basePath/$SCALING_MIN_FREQ"
+        commands.add("chmod 644 $minPath")
+        commands.add("echo '$minSpeed' > $minPath")
+        commands.add("chmod 444 $minPath")
+        
+        return commands
+    }
+    
+    private fun getPerformanceParameterCommands(maxSpeed: Int, minSpeed: Int): List<String> {
+        val commands = mutableListOf<String>()
+        
+        for (core in 0 until numberOfCores) {
+            // Max frequency
+            commands.add("chmod 644 $MSM_MAX_FREQ")
+            commands.add("echo '$core:$maxSpeed' > $MSM_MAX_FREQ")
+            commands.add("chmod 444 $MSM_MAX_FREQ")
+            
+            // Min frequency
+            commands.add("chmod 644 $MSM_MIN_FREQ")
+            commands.add("echo '$core:$minSpeed' > $MSM_MIN_FREQ")
+            commands.add("chmod 444 $MSM_MIN_FREQ")
+        }
+        
+        return commands
+    }
+    
+    private fun setCPUFolderPermissions() {
         try {
-            runWithSU(arrayOf("chmod 755 /sys/devices/system/cpu/cpu*"))
+            rootManager.setPermissions("$CPU_BASE_PATH/cpu*", "755")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to update folders' permission", e)
+            Log.e(TAG, "Failed to update CPU folder permissions", e)
         }
-    }
-    
-    private fun runWithSU(commands: Array<String>) {
-        val su = Runtime.getRuntime().exec("su")
-        val terminal = DataOutputStream(su.outputStream)
-        for (command in commands) {
-            terminal.writeBytes(command)
-            terminal.flush()
-        }
-        terminal.close()
-    }
-    
-    private fun getOutputFromShell(command: String): String? {
-        return try {
-            val p = Runtime.getRuntime().exec(command)
-            val reader = BufferedReader(InputStreamReader(p.inputStream))
-            var read: Int
-            val buffer = CharArray(4096)
-            val output = StringBuffer()
-            while (reader.read(buffer).also { read = it } > 0) {
-                output.append(buffer, 0, read)
-            }
-            reader.close()
-            p.waitFor()
-            output.toString()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting output from shell", e)
-            null
-        }
-    }
-    
-    private fun findBinary(binaryName: String): Boolean {
-        for (path in places) {
-            if (File(path + binaryName).exists()) {
-                return true
-            }
-        }
-        return false
     }
 }

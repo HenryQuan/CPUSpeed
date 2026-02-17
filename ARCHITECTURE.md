@@ -8,7 +8,7 @@ CPUSpeed has been completely rewritten to use modern Android development practic
 ## Technology Stack
 
 ### Core Technologies
-- **Language**: Kotlin 2.0.21
+- **Language**: Kotlin 2.3.0
 - **UI Framework**: Jetpack Compose
 - **Design System**: Material 3
 - **Build Tool**: Gradle 8.9 with Kotlin DSL
@@ -22,7 +22,7 @@ The project uses a **version catalog** (`gradle/libs.versions.toml`) for central
 - AndroidX Lifecycle 2.8.7
 - Activity Compose 1.9.3
 
-## Architecture Pattern: MVVM
+## Architecture Pattern: MVVM with Enhanced Root Layer
 
 ### Layer Separation
 
@@ -49,9 +49,17 @@ The project uses a **version catalog** (`gradle/libs.versions.toml`) for central
 │       Manager Layer                 │
 │      CPUManager.kt                  │
 │  - CPU operations                   │
-│  - Root detection                   │
-│  - System commands execution        │
-│  - Error handling                   │
+│  - Governor management (prepared)   │
+│  - Power management (prepared)      │
+└──────────────┬──────────────────────┘
+               │ uses
+               ▼
+┌─────────────────────────────────────┐
+│       Root Execution Layer          │
+│      RootManager.kt                 │
+│  - Root command execution           │
+│  - File operations with root        │
+│  - Error handling & logging         │
 └─────────────────────────────────────┘
 ```
 
@@ -59,18 +67,40 @@ The project uses a **version catalog** (`gradle/libs.versions.toml`) for central
 
 ### Core Files
 
-#### `CPUManager.kt`
-Responsible for all low-level CPU operations:
-- **Root Detection**: Checks for `su` and `busybox` binaries
-- **CPU Information**: Reads frequency data from `/sys/devices/system/cpu/`
-- **Frequency Control**: Writes new frequencies using root commands
-- **Error Handling**: Returns Result types for proper error propagation
-- **Device Compatibility**: Validates CPU frequency interface availability
+#### `RootManager.kt` (New)
+Enhanced root command execution layer:
+- **Root Detection**: Checks for `su`, `busybox`, and `magisk` binaries
+- **Command Execution**: Single commands or batch execution
+- **File Operations**: Read/write files with root privileges
+- **Error Handling**: Proper exit code checking and error propagation
+- **Logging**: Comprehensive logging for debugging
+
+Key Methods:
+- `isRootAvailable(): Boolean`
+- `executeCommand(command: String): Result<String>`
+- `executeCommands(commands: List<String>): Result<Unit>`
+- `readFile(path: String): Result<String>`
+- `writeFile(path: String, content: String): Result<Unit>`
+- `fileExists(path: String): Boolean`
+- `setPermissions(path: String, permissions: String): Result<Unit>`
+
+#### `CPUManager.kt` (Enhanced)
+Manages CPU operations with future extensibility:
+- **CPU Frequency Control**: Read and set min/max frequencies
+- **Governor Support**: Read current/available governors (prepared for control)
+- **Performance Parameters**: Qualcomm MSM-specific parameters
+- **Device Compatibility**: Validates CPU frequency interface
+- **Future-Ready**: Structure prepared for power management features
 
 Key Methods:
 - `isDeviceRooted(): Boolean`
-- `getCPUInfo(): CPUInfo`
+- `getCPUInfo(): CPUInfo` - Returns comprehensive CPU information including governor data
 - `setCPUSpeed(maxSpeed: Int, minSpeed: Int): Result<Unit>`
+- `setCPUGovernor(governor: String): Result<Unit>` - Prepared for future use
+
+New CPUInfo Fields:
+- `currentGovernor: String?` - Current CPU governor
+- `availableGovernors: List<String>?` - Available governors for switching
 
 #### `CPUViewModel.kt`
 Manages UI state and coordinates business logic:
@@ -267,20 +297,83 @@ UI shows Toast notification
 
 ## Future Enhancements
 
-### Potential Features
-- [ ] CPU frequency profiles (Battery Saver, Balanced, Performance)
+### Planned Power Management Features
+The architecture is now prepared to support:
+
+#### 1. CPU Governor Control
+- Switch between available governors (interactive, performance, powersave, conservative, ondemand)
+- Per-core governor selection
+- Governor profiles with preset configurations
+- Real-time governor switching
+
+#### 2. Power Management
+- Thermal monitoring and control
+- Battery-aware frequency scaling
+- Power consumption estimation
+- Idle state management
+
+#### 3. Advanced Frequency Control
+- Per-core frequency management (big.LITTLE/DynamIQ support)
+- Frequency boost control
+- Frequency locking and pinning
+- Custom frequency stepping
+
+#### 4. Profiles and Automation
+- CPU frequency profiles (Battery Saver, Balanced, Performance, Gaming)
+- Scheduled profile switching
+- App-based profile triggers
+- Battery level-based automatic switching
+
+#### 5. Monitoring and Statistics
+- Real-time CPU frequency monitoring
+- Temperature monitoring
+- Power consumption tracking
+- Historical statistics and graphs
+- Core usage visualization
+
+### Technical Roadmap
+
+#### Phase 1: Enhanced Root Layer ✅
+- [x] Implement RootManager with robust command execution
+- [x] Add proper error handling and logging
+- [x] Support multiple root binaries
+- [x] File operations with root privileges
+
+#### Phase 2: Governor Control (Next)
+- [ ] UI for governor selection
+- [ ] Governor switching implementation
+- [ ] Governor information display
+- [ ] Governor profiles
+
+#### Phase 3: Power Features
+- [ ] Thermal monitoring integration
+- [ ] Power consumption estimation
+- [ ] Battery-aware scaling
+- [ ] Power profiles
+
+#### Phase 4: Advanced Features
 - [ ] Per-core frequency control
-- [ ] Temperature monitoring
-- [ ] Frequency change scheduling
-- [ ] Battery statistics integration
+- [ ] Real-time monitoring
+- [ ] Statistics and graphs
 - [ ] Widget support
 
-### Technical Improvements
-- [ ] Unit test coverage
-- [ ] UI tests with Compose Testing
-- [ ] CI/CD pipeline
-- [ ] Automated release process
-- [ ] F-Droid distribution
+### Code Structure for Future Features
+
+The codebase is designed to easily accommodate new features:
+
+```kotlin
+// Already prepared in CPUManager.kt
+fun getCurrentGovernor(): String?
+fun getAvailableGovernors(): List<String>?
+fun setCPUGovernor(governor: String): Result<Unit>
+
+// Future additions
+fun getThermalZones(): List<ThermalZone>
+fun getCurrentTemperature(): Float
+fun setPowerProfile(profile: PowerProfile): Result<Unit>
+fun getCoreFrequencies(): Map<Int, Int>
+fun setPerCoreFrequency(core: Int, frequency: Int): Result<Unit>
+```
 
 ## Migration Guide (from Legacy)
 
