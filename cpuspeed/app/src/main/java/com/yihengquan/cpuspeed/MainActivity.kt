@@ -1,15 +1,21 @@
 package com.yihengquan.cpuspeed
 
-import android.graphics.Color
 import android.os.Bundle
-import com.yihengquan.cpuspeed.flutter.FlutterManager
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.yihengquan.cpuspeed.ui.screens.HomeScreen
+import com.yihengquan.cpuspeed.ui.theme.CPUSpeedTheme
 
-class MainActivity : FlutterActivity() {
+class MainActivity : ComponentActivity() {
 
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-        FlutterManager.setup(flutterEngine, context)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            CPUSpeedTheme {
+                HomeScreen()
+            }
+        }
     }
 }

@@ -1,4 +1,10 @@
-# firebase config
 **/app/google-services.json
 **/*.aab
 **/*.apk
+*.iml
+*.log
+*.hprof
+.DS_Store
+local.properties
+.gradle/
+.idea/
